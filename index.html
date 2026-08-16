@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NYC Colombia Earthquake Donation Hubs</title>
+    
+    <!-- Leaflet Map CSS Stylesheet (I'm using the Leaflet map system since I can test out my map right away) -->
+    <link rel="stylesheet" href="https://unpkg.com" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="sidebar">
+        <h2>🇨🇴 NYC Relief Sites</h2>
+        <p>Find donation spots for the Colombian earthquake recovery relative to your location.</p>
+        
+        <!-- Zip Code Filter Form -->
+        <div class="filter-group">
+            <label for="zipFilter">Filter by ZIP Code:</label>
+            <select id="zipFilter" onchange="filterMarkers()">
+                <option value="all">All NYC ZIP Codes</option>
+                <option value="10001">10001 (Manhattan)</option>
+                <option value="11372">11372 (Jackson Heights)</option>
+                <option value="11211">11211 (Williamsburg)</option>
+            </select>
+        </div>
+
+        <div id="site-list">
+            <!-- Active donation sites will appear here -->
+        </div>
+    </div>
+
+    <!-- Map Canvas Element -->
+    <div id="map"></div>
+
+    <!-- Leaflet Map JavaScript Library -->
+    <script src="https://unpkg.com" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="app.js"></script>
+</body>
+</html>
