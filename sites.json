@@ -1,1 +1,145 @@
-[]
+[
+  {
+    "name": "Kabu Lounge",
+    "address": "85-09 Northern Blvd, Jackson Heights",
+    "borough": "Queens",
+    "zip": "",
+    "phone": "(718) 429-0321",
+    "lat": 40.7558874,
+    "lng": -73.8823389,
+    "source_url": "https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/",
+    "geocoded_address": "Northern Boulevard, Jackson Heights, Queens, Queens County, New York, 11372, United States"
+  },
+  {
+    "name": "Praga",
+    "address": "63-10 Broadway, Woodside",
+    "borough": "Queens",
+    "zip": "",
+    "phone": "(718) 905-0407",
+    "lat": 40.7497051,
+    "lng": -73.8988954,
+    "source_url": "https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/",
+    "geocoded_address": "Praga Tapas Bar, 63-10, Broadway, Woodside, Queens, Queens County, New York, 11377, United States"
+  },
+  {
+    "name": "Bronx Foot Specialist",
+    "address": "2425 Eastchester Road, Bronx",
+    "borough": "Bronx",
+    "zip": "",
+    "phone": "(718) 881-7990",
+    "lat": 40.8617738,
+    "lng": -73.843726,
+    "source_url": "https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/",
+    "geocoded_address": "2425, Eastchester Road, The Bronx, Bronx County, New York, 10469, United States"
+  },
+  {
+    "name": "115th Precinct - NYPD",
+    "address": "92-15 Northern Blvd, East Elmhurst",
+    "borough": "Queens",
+    "zip": "",
+    "phone": "(718) 533-2002",
+    "lat": 40.7575888,
+    "lng": -73.8661242,
+    "source_url": "https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/",
+    "geocoded_address": "Northern Boulevard, East Elmhurst, Queens, Queens County, New York, 11369, United States"
+  },
+  {
+    "name": "Seba Seba",
+    "address": "83-03 Northern Blvd, Jackson Heights",
+    "borough": "Queens",
+    "zip": "",
+    "phone": "(718) 335-4548",
+    "lat": 40.755897,
+    "lng": -73.8842603,
+    "source_url": "https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/",
+    "geocoded_address": "83-03, Northern Boulevard, Jackson Heights, Queens, Queens County, New York, 11370, United States"
+  },
+  {
+    "name": "Salvaje Social Club",
+    "address": "79-11 Northern Blvd, Jackson Heights",
+    "borough": "Queens",
+    "zip": "",
+    "phone": "(929) 799-7729",
+    "lat": 40.755474,
+    "lng": -73.88767,
+    "source_url": "https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/",
+    "geocoded_address": "Los Coritos, 79-11, Northern Boulevard, Jackson Heights, Queens, Queens County, New York, 11372, United States"
+  },
+  {
+    "name": "Lechoneria",
+    "address": "84-17 Northern Blvd, Jackson Heights",
+    "borough": "Queens",
+    "zip": "",
+    "phone": "(347) 527-1613",
+    "lat": 40.7560639,
+    "lng": -73.8828926,
+    "source_url": "https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/",
+    "geocoded_address": "84-17, Northern Boulevard, Jackson Heights, Queens, Queens County, New York, 11370, United States"
+  },
+  {
+    "name": "Crece Family Enrichment Center",
+    "address": "105-15 Northern Blvd, East Elmhurst",
+    "borough": "Queens",
+    "zip": "",
+    "phone": "(917) 724-9279",
+    "lat": 40.7571813,
+    "lng": -73.8700222,
+    "source_url": "https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/",
+    "geocoded_address": "Northern Boulevard, East Elmhurst, Queens, Queens County, New York, 11369, United States"
+  },
+  {
+    "name": "La Jornada NYC",
+    "address": "47-09 30th Street, Long Island City",
+    "borough": "Queens",
+    "zip": "",
+    "phone": "(347) 527-1379",
+    "lat": 40.7428959,
+    "lng": -73.9376008,
+    "source_url": "https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/",
+    "geocoded_address": "47-09, 30th Street, Court Square, Long Island City, Queens, Queens County, New York, 11101, United States"
+  },
+  {
+    "name": "Medical Center",
+    "address": "5 Debevoise Street, Brooklyn",
+    "borough": "Brooklyn",
+    "zip": "",
+    "phone": "(718) 963-2254",
+    "lat": 40.7017457,
+    "lng": -73.9430218,
+    "source_url": "https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/",
+    "geocoded_address": "5, Debevoise Street, Brooklyn, Kings County, New York, 11206, United States"
+  },
+  {
+    "name": "Hispanoamerica Wholesale",
+    "address": "94-28 Northern Blvd, Jackson Heights, NY 11372",
+    "borough": "Queens",
+    "zip": "11372",
+    "phone": "(929) 349-1818",
+    "lat": 40.7561255,
+    "lng": -73.8800926,
+    "source_url": "https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/",
+    "geocoded_address": "Northern Boulevard, Jackson Heights, Queens, Queens County, New York, 11372, United States"
+  },
+  {
+    "name": "Hispanoamerica",
+    "address": "95-02 Northern Blvd, Jackson Heights, NY 11373",
+    "borough": "Queens",
+    "zip": "11373",
+    "phone": "(718) 806-1137",
+    "lat": 40.7561255,
+    "lng": -73.8800926,
+    "source_url": "https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/",
+    "geocoded_address": "Northern Boulevard, Jackson Heights, Queens, Queens County, New York, 11372, United States"
+  },
+  {
+    "name": "Puerto Plata Queens",
+    "address": "75-16 Rockaway Blvd, Woodhaven, NY 11421",
+    "borough": "Queens",
+    "zip": "11421",
+    "phone": "(718) 296-1717",
+    "lat": 40.685445,
+    "lng": -73.8644955,
+    "source_url": "https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/",
+    "geocoded_address": "75-16, Rockaway Boulevard, Woodhaven, Queens, Queens County, New York, 11421, United States"
+  }
+]
