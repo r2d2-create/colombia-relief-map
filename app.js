@@ -59,7 +59,7 @@ function displaySites(sites) {
     listContainer.innerHTML = "";
 
     sites.forEach(site => {
-        const routingUrl = `https://google.com{encodeURIComponent(site.address)}&travelmode=transit`;
+        const routingUrl = `https://google.com/maps/dir/?api=1&destination=${encodeURIComponent(site.address)}&travelmode=transit`;
         const pinColor = getBoroughColor(site.borough);
         
         // Drops customized colored circle pin onto map canvas
