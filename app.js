@@ -143,4 +143,4 @@ function updateTimestamp() {
     timeElement.innerText = `Last checked: Today at ${now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
 }
 
-window.onload = initMap;
+document.addEventListener('DOMContentLoaded', initMap);
