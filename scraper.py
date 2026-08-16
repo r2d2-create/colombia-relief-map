@@ -1,4 +1,3 @@
-import ast
 import html
 import json
 import re
@@ -14,12 +13,12 @@ PROJECT_ROOT = Path(__file__).resolve().parent
 OUTPUT_FILE = PROJECT_ROOT / "sites.json"
 GEOCODE_CACHE_FILE = PROJECT_ROOT / "geocode_cache.json"
 
-PROJECT_URL = "https://github.com/YOUR-USERNAME/YOUR-REPOSITORY"
+PROJECT_URL = "https://github.com/r2d2-create/colombia-relief-map"
 CONTACT_EMAIL = "YOUR-EMAIL@example.com"
 
 NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
 GEOCODE_DELAY_SECONDS = 15
-NYC_VIEWBOX = "-74.2591,40.4774,-73.7004,40.9176"
+NYC_VIEWBOX = "-74.30,40.45,-73.65,40.95"
 
 SOURCE_HEADERS = {
     "User-Agent": (
@@ -41,31 +40,31 @@ GEOCODE_HEADERS = {
 
 
 def write_json(file_path, data):
-    """Write JSON atomically so Actions never leaves a partially written file."""
+    """Safely write formatted JSON to a project file."""
     temporary_file = file_path.with_suffix(f"{file_path.suffix}.tmp")
 
     with temporary_file.open("w", encoding="utf-8") as file:
-        json.dump(data, file, ensure_ascii=False, indent=2, sort_keys=True)
+        json.dump(data, file, ensure_ascii=False, indent=2)
         file.write("\n")
 
     temporary_file.replace(file_path)
 
 
 def load_json(file_path, fallback):
-    """Load JSON data, returning a safe fallback when the file is absent or invalid."""
+    """Load an existing JSON file, returning fallback if unavailable."""
     if not file_path.exists():
         return fallback
 
     try:
         with file_path.open("r", encoding="utf-8") as file:
             return json.load(file)
-    except (json.JSONDecodeError, OSError) as error:
+    except (OSError, json.JSONDecodeError) as error:
         print(f"Could not read {file_path.name}: {error}")
         return fallback
 
 
 def clean_text(value):
-    """Convert scraped values into normalized, single-line text."""
+    """Normalize text scraped from HTML and Flourish table cells."""
     if value is None:
         return ""
 
@@ -76,100 +75,91 @@ def clean_text(value):
 
 
 def normalize_text(value):
-    """Normalize text for comparisons and cache keys."""
+    """Normalize text for cache keys and record comparison."""
     value = clean_text(value).lower()
     value = re.sub(r"[^a-z0-9\s]", " ", value)
     return re.sub(r"\s+", " ", value).strip()
 
 
 def extract_zip(address_text):
-    """Extract a US five-digit ZIP code, if the source includes one."""
+    """Return the first five-digit ZIP code in an address, if present."""
     match = re.search(r"\b(\d{5})(?:-\d{4})?\b", address_text)
     return match.group(1) if match else ""
 
 
-def extract_house_number(address_text):
-    """Extract a leading-style street number for basic geocoding verification."""
-    match = re.search(r"\b(\d{1,6}[a-zA-Z]?)\b", address_text)
-    return match.group(1).lower() if match else ""
-
-
 def normalize_borough(value):
-    """Convert source borough labels into a consistent set of map values."""
+    """Return a consistent borough/county label."""
     text = normalize_text(value)
 
-    borough_names = {
+    names = {
         "queens": "Queens",
         "brooklyn": "Brooklyn",
         "bronx": "Bronx",
         "manhattan": "Manhattan",
-        "staten island": "Staten Island"
+        "staten island": "Staten Island",
+        "nassau": "Nassau County"
     }
 
-    for keyword, borough in borough_names.items():
+    for keyword, standardized_name in names.items():
         if keyword in text:
-            return borough
+            return standardized_name
 
     return "Other"
 
 
-def borough_from_geocode(result):
-    """Read a borough from Nominatim structured address fields when possible."""
-    address = result.get("address", {})
-    display_name = normalize_text(result.get("display_name", ""))
+def address_for_geocoding(address, borough):
+    """
+    Add regional context only when the scraped address lacks it.
+    This helps Nominatim distinguish local streets without changing
+    addresses that already include city/state/ZIP details.
+    """
+    address = clean_text(address)
+    address_lower = address.lower()
 
-    candidates = [
-        address.get("borough", ""),
-        address.get("city_district", ""),
-        address.get("suburb", ""),
-        address.get("city", ""),
-        display_name
-    ]
+    has_state_or_zip = (
+        bool(re.search(r"\bny\b", address_lower))
+        or bool(extract_zip(address))
+        or "new york" in address_lower
+    )
 
-    for candidate in candidates:
-        borough = normalize_borough(candidate)
+    if has_state_or_zip:
+        return f"{address}, USA"
 
-        if borough != "Other":
-            return borough
+    if borough == "Nassau County":
+        return f"{address}, Nassau County, NY, USA"
 
-    return "Other"
+    return f"{address}, {borough}, New York, NY, USA"
 
 
-def extract_balanced_object(text, start_index):
-    """Return a complete balanced object or array starting at start_index."""
-    opening_character = text[start_index]
-
-    if opening_character == "{":
-        closing_character = "}"
-    elif opening_character == "[":
-        closing_character = "]"
-    else:
+def extract_balanced_json_object(text, start_index):
+    """
+    Starting at an opening `{`, return the complete nested JSON object.
+    Handles braces inside quoted strings.
+    """
+    if start_index >= len(text) or text[start_index] != "{":
         return None
 
     depth = 0
     in_string = False
-    quote_character = None
-    escaped = False
+    escape_next = False
 
     for index in range(start_index, len(text)):
         character = text[index]
 
         if in_string:
-            if escaped:
-                escaped = False
+            if escape_next:
+                escape_next = False
             elif character == "\\":
-                escaped = True
-            elif character == quote_character:
+                escape_next = True
+            elif character == '"':
                 in_string = False
-                quote_character = None
             continue
 
-        if character in ('"', "'"):
+        if character == '"':
             in_string = True
-            quote_character = character
-        elif character == opening_character:
+        elif character == "{":
             depth += 1
-        elif character == closing_character:
+        elif character == "}":
             depth -= 1
 
             if depth == 0:
@@ -178,214 +168,112 @@ def extract_balanced_object(text, start_index):
     return None
 
 
-def parse_json_like(raw_text):
-    """Parse strict JSON, then a limited Python-like embedded-data fallback."""
-    raw_text = raw_text.strip().rstrip(";")
+def extract_flourish_rows(page_html):
+    """
+    Extract this exact Flourish pattern:
+
+    _Flourish_data = {"rows":[{"columns":[...]} ... ]},
+    _Flourish_visualisation_id = ...
+    """
+    assignment_match = re.search(
+        r"\b_Flourish_data\s*=\s*",
+        page_html
+    )
+
+    if not assignment_match:
+        print("Could not find the '_Flourish_data =' assignment in the source page.")
+        return []
+
+    after_assignment = page_html[assignment_match.end():]
+    object_start_relative = after_assignment.find("{")
+
+    if object_start_relative == -1:
+        print("Found '_Flourish_data' but could not find its opening JSON object.")
+        return []
+
+    object_start = assignment_match.end() + object_start_relative
+    raw_json = extract_balanced_json_object(page_html, object_start)
+
+    if not raw_json:
+        print("Could not isolate the complete Flourish JSON object.")
+        return []
 
     try:
-        return json.loads(raw_text)
-    except json.JSONDecodeError:
-        pass
+        flourish_data = json.loads(raw_json)
+    except json.JSONDecodeError as error:
+        print(f"Could not parse Flourish JSON: {error}")
+        return []
 
-    python_like_text = re.sub(
-        r"\btrue\b",
-        "True",
-        raw_text,
-        flags=re.IGNORECASE
-    )
-    python_like_text = re.sub(
-        r"\bfalse\b",
-        "False",
-        python_like_text,
-        flags=re.IGNORECASE
-    )
-    python_like_text = re.sub(
-        r"\bnull\b",
-        "None",
-        python_like_text,
-        flags=re.IGNORECASE
-    )
+    rows = flourish_data.get("rows", [])
 
-    try:
-        return ast.literal_eval(python_like_text)
-    except (ValueError, SyntaxError) as error:
-        print(f"Could not parse embedded data block: {error}")
-        return None
+    if not isinstance(rows, list):
+        print("Flourish data was found, but its 'rows' value was not a list.")
+        return []
+
+    print(f"Found {len(rows)} row(s) in the Flourish donation-site table.")
+    return rows
 
 
-def find_embedded_flourish_data(page_html):
-    """Find and parse common Flourish data-variable patterns in the source HTML."""
-    variable_patterns = [
-        r"\b_Flourish_data\s*=",
-        r"\bFlourish_data\s*=",
-        r"\bflourishData\s*=",
-        r"\bflourish_data\s*="
-    ]
+def source_rows_to_sites(rows):
+    """Convert Flourish rows into normalized donation-site records."""
+    sites = []
+    seen = set()
 
-    for pattern in variable_patterns:
-        match = re.search(pattern, page_html, flags=re.IGNORECASE)
+    for row in rows:
+        columns = row.get("columns", [])
 
-        if not match:
+        if not isinstance(columns, list) or len(columns) < 4:
             continue
 
-        remainder = page_html[match.end():]
-        opening_match = re.search(r"[\{\[]", remainder)
+        name = clean_text(columns[0])
+        address = clean_text(columns[1])
+        borough = normalize_borough(columns[2])
+        phone = clean_text(columns[3]) or "N/A"
 
-        if not opening_match:
+        if not name or not address:
             continue
 
-        start_index = match.end() + opening_match.start()
-        raw_block = extract_balanced_object(page_html, start_index)
+        dedupe_key = (normalize_text(name), normalize_text(address))
 
-        if not raw_block:
-            print("Found a Flourish variable but could not isolate its data block.")
+        if dedupe_key in seen:
             continue
 
-        parsed_data = parse_json_like(raw_block)
+        seen.add(dedupe_key)
 
-        if parsed_data is not None:
-            print("Found and parsed an embedded Flourish data block.")
-            return parsed_data
+        sites.append({
+            "name": name,
+            "address": address,
+            "borough": borough,
+            "phone": phone
+        })
 
-    return None
-
-
-def get_rows(data):
-    """Return tabular rows from several likely embedded-data layouts."""
-    if isinstance(data, dict):
-        if isinstance(data.get("rows"), list):
-            return data["rows"]
-
-        if isinstance(data.get("data"), list):
-            return data["data"]
-
-        for value in data.values():
-            if isinstance(value, dict) and isinstance(value.get("rows"), list):
-                return value["rows"]
-
-    if isinstance(data, list):
-        return data
-
-    return []
-
-
-def row_to_columns(row):
-    """Support Flourish {'columns': [...]} rows and raw row arrays."""
-    if isinstance(row, dict) and isinstance(row.get("columns"), list):
-        return [clean_text(item) for item in row["columns"]]
-
-    if isinstance(row, (list, tuple)):
-        return [clean_text(item) for item in row]
-
-    return []
-
-
-def geocode_query(address, borough):
-    """Build a focused NYC geocoding query from a scraped location."""
-    parts = [address]
-
-    if borough != "Other" and borough.lower() not in address.lower():
-        parts.append(borough)
-
-    if "new york" not in address.lower() and "ny" not in address.lower():
-        parts.append("New York, NY")
-
-    parts.append("USA")
-
-    return ", ".join(parts)
-
-
-def geocode_result_matches_source(source_address, result):
-    """
-    Reject a result when available ZIP or house-number evidence conflicts.
-
-    If the source has no ZIP code, require both a matching house number and
-    recognizable street words before publishing a precise marker.
-    """
-    returned_address = result.get("address", {})
-    display_name = normalize_text(result.get("display_name", ""))
-
-    source_zip = extract_zip(source_address)
-    result_zip = str(returned_address.get("postcode", ""))[:5]
-
-    if source_zip and result_zip and source_zip != result_zip:
-        return False
-
-    source_house_number = extract_house_number(source_address)
-    result_house_number = normalize_text(returned_address.get("house_number", ""))
-
-    if source_house_number and result_house_number:
-        if source_house_number != result_house_number:
-            return False
-
-    ignored_words = {
-        "street",
-        "avenue",
-        "boulevard",
-        "road",
-        "drive",
-        "place",
-        "court",
-        "suite",
-        "floor",
-        "north",
-        "south",
-        "east",
-        "west",
-        "york",
-        "new"
-    }
-
-    source_words = [
-        word
-        for word in normalize_text(source_address).split()
-        if len(word) >= 4 and word not in ignored_words
-    ]
-
-    street_match = any(word in display_name for word in source_words)
-
-    if source_zip:
-        return street_match or source_house_number == result_house_number
-
-    return bool(
-        source_house_number
-        and source_house_number == result_house_number
-        and street_match
-    )
+    print(f"Prepared {len(sites)} unique site record(s) for geocoding.")
+    return sites
 
 
 def geocode_address(address, borough, cache):
     """
-    Return verified coordinates for an address.
+    Return latitude/longitude for an address.
 
-    The cache stores:
-    - successful geocodes as a dictionary with lat/lng
-    - durable no-match/ambiguous results as None
-
-    Transient HTTP or network errors are NOT cached, so a later workflow run
-    can retry without losing a previously valid cached coordinate.
+    Results are stored in geocode_cache.json so the same address is not
+    repeatedly sent to the geocoding service during later daily workflow runs.
     """
-    query = geocode_query(address, borough)
+    query = address_for_geocoding(address, borough)
     cache_key = normalize_text(query)
 
-    if cache_key in cache:
-        cached_result = cache[cache_key]
+    cached_location = cache.get(cache_key)
 
-        if cached_result is None:
-            print(f"Using cached no-match result: {address}")
-            return None
+    if isinstance(cached_location, dict):
+        lat = cached_location.get("lat")
+        lng = cached_location.get("lng")
 
-        if (
-            isinstance(cached_result, dict)
-            and isinstance(cached_result.get("lat"), (int, float))
-            and isinstance(cached_result.get("lng"), (int, float))
-        ):
-            print(f"Using cached coordinates: {address}")
-            return cached_result
+        if isinstance(lat, (int, float)) and isinstance(lng, (int, float)):
+            print(f"Using cached geocode: {address}")
+            return cached_location
 
-        print(f"Ignoring invalid cached entry and retrying: {address}")
-        del cache[cache_key]
-        write_json(GEOCODE_CACHE_FILE, cache)
+    if cache_key in cache and cached_location is None:
+        print(f"Using cached no-match result: {address}")
+        return None
 
     print(f"Geocoding: {query}")
 
@@ -410,93 +298,44 @@ def geocode_address(address, borough, cache):
         results = response.json()
     except (requests.RequestException, ValueError) as error:
         print(f"Temporary geocoding failure for '{address}': {error}")
-        print("This failure was not cached; a future scheduled run can retry it.")
+        print("This error was not cached, so a later run can retry it.")
         time.sleep(GEOCODE_DELAY_SECONDS)
         return None
 
     time.sleep(GEOCODE_DELAY_SECONDS)
 
     if not results:
-        print(f"No geocoding result for: {address}")
+        print(f"No geocode result found for: {address}")
         cache[cache_key] = None
         write_json(GEOCODE_CACHE_FILE, cache)
         return None
 
     result = results[0]
 
-    if not geocode_result_matches_source(address, result):
-        print(f"Rejected ambiguous geocoding result for: {address}")
-        print(f"Returned: {result.get('display_name', '')}")
-
-        cache[cache_key] = None
-        write_json(GEOCODE_CACHE_FILE, cache)
-        return None
-
     try:
-        verified_location = {
+        location = {
             "lat": float(result["lat"]),
             "lng": float(result["lon"]),
-            "display_name": clean_text(result.get("display_name", "")),
-            "borough": borough_from_geocode(result)
+            "geocoded_address": clean_text(result.get("display_name", ""))
         }
     except (KeyError, TypeError, ValueError):
-        print(f"Geocoding result lacked usable coordinates for: {address}")
-
+        print(f"Geocoding returned unusable coordinates for: {address}")
         cache[cache_key] = None
         write_json(GEOCODE_CACHE_FILE, cache)
         return None
 
-    cache[cache_key] = verified_location
+    cache[cache_key] = location
     write_json(GEOCODE_CACHE_FILE, cache)
 
-    return verified_location
+    return location
 
 
-def parse_source_rows(data):
-    """Extract raw location records from the scraped source table."""
-    raw_sites = []
-
-    for row in get_rows(data):
-        columns = row_to_columns(row)
-
-        if len(columns) < 2:
-            continue
-
-        name = clean_text(columns[0])
-        address = clean_text(columns[1])
-        borough = normalize_borough(columns[2] if len(columns) > 2 else "")
-        phone = clean_text(columns[3] if len(columns) > 3 else "") or "N/A"
-
-        if not name or not address:
-            continue
-
-        raw_sites.append({
-            "name": name,
-            "address": address,
-            "borough": borough,
-            "phone": phone
-        })
-
-    return raw_sites
-
-
-def build_map_sites(raw_sites):
-    """Geocode, validate, and deduplicate source records for the web map."""
+def build_map_sites(source_sites):
+    """Geocode source records and create the map-ready output dataset."""
     cache = load_json(GEOCODE_CACHE_FILE, {})
     map_sites = []
-    seen = set()
 
-    for site in raw_sites:
-        dedupe_key = (
-            normalize_text(site["name"]),
-            normalize_text(site["address"])
-        )
-
-        if dedupe_key in seen:
-            continue
-
-        seen.add(dedupe_key)
-
+    for site in source_sites:
         location = geocode_address(
             site["address"],
             site["borough"],
@@ -504,24 +343,19 @@ def build_map_sites(raw_sites):
         )
 
         if location is None:
-            print(f"Skipped site without verified coordinates: {site['name']}")
+            print(f"Skipped site without coordinates: {site['name']}")
             continue
-
-        final_borough = location["borough"]
-
-        if final_borough == "Other":
-            final_borough = site["borough"]
 
         map_sites.append({
             "name": site["name"],
             "address": site["address"],
-            "borough": final_borough,
+            "borough": site["borough"],
             "zip": extract_zip(site["address"]),
             "phone": site["phone"],
             "lat": location["lat"],
             "lng": location["lng"],
             "source_url": SOURCE_URL,
-            "geocoded_address": location["display_name"]
+            "geocoded_address": location["geocoded_address"]
         })
 
     write_json(GEOCODE_CACHE_FILE, cache)
@@ -529,11 +363,6 @@ def build_map_sites(raw_sites):
 
 
 def auto_scrape():
-    """
-    Fetch source locations, geocode verified addresses, and update:
-    - sites.json: data used by the website
-    - geocode_cache.json: reusable address-lookup cache for future workflow runs
-    """
     try:
         response = requests.get(
             SOURCE_URL,
@@ -549,27 +378,20 @@ def auto_scrape():
 
     print(f"Downloaded {len(response.text):,} characters from source page.")
 
-    source_data = find_embedded_flourish_data(response.text)
+    flourish_rows = extract_flourish_rows(response.text)
 
-    if source_data is None:
-        print("No parseable embedded Flourish dataset was found.")
+    if not flourish_rows:
+        print("No donation-site rows were extracted from Flourish.")
         write_json(OUTPUT_FILE, [])
         return
 
-    raw_sites = parse_source_rows(source_data)
-    print(f"Extracted {len(raw_sites)} possible donation-site record(s).")
+    source_sites = source_rows_to_sites(flourish_rows)
+    map_sites = build_map_sites(source_sites)
 
-    map_sites = build_map_sites(raw_sites)
     write_json(OUTPUT_FILE, map_sites)
 
-    print(f"Saved {len(map_sites)} verified, map-ready site record(s).")
-    print(f"Updated cache file: {GEOCODE_CACHE_FILE.name}")
-
-    if raw_sites and not map_sites:
-        print(
-            "Source rows were found, but no records passed address verification. "
-            "Review the workflow logs before loosening match requirements."
-        )
+    print(f"Saved {len(map_sites)} map-ready donation site(s).")
+    print(f"Updated geocoding cache: {GEOCODE_CACHE_FILE.name}")
 
 
 if __name__ == "__main__":
