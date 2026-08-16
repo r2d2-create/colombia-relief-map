@@ -15,7 +15,7 @@ OUTPUT_FILE = PROJECT_ROOT / "sites.json"
 GEOCODE_CACHE_FILE = PROJECT_ROOT / "geocode_cache.json"
 
 PROJECT_URL = "https://github.com/r2d2-create/colombia-relief-map"
-CONTACT_EMAIL = "YOUR-EMAIL@example.com"
+CONTACT_EMAIL = "end259@nyu.edu"
 
 NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
 GEOCODE_DELAY_SECONDS = 15
