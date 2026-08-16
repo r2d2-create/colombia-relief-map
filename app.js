@@ -18,7 +18,7 @@ function createCustomMarker(color) {
     return L.divIcon({
         className: 'custom-pin',
         html: `<div style="background-color: ${color}; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.4);"></div>`,
-        iconSize:,
+        iconSize: [14, 14],
         iconAnchor: [7, 7]
     });
 }
@@ -111,7 +111,7 @@ function locateUser() {
             icon: L.divIcon({
                 className: 'user-pin',
                 html: `<div style="background-color: #007bff; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 8px #007bff;"></div>`,
-                iconSize:,
+                iconSize: [16, 16],
                 iconAnchor: [8, 8]
             })
         }).addTo(map).bindPopup("<b>You are here</b>").openPopup();
