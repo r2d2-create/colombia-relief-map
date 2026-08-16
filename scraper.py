@@ -8,6 +8,7 @@ import requests
 
 
 SOURCE_URL = "https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/"
+FLOURISH_EMBED_URL = "https://flo.uri.sh/visualisation/29940879/embed"
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 OUTPUT_FILE = PROJECT_ROOT / "sites.json"
@@ -365,18 +366,18 @@ def build_map_sites(source_sites):
 def auto_scrape():
     try:
         response = requests.get(
-            SOURCE_URL,
+            FLOURISH_EMBED_URL,
             headers=SOURCE_HEADERS,
             timeout=30
         )
-        print(f"Source HTTP status: {response.status_code}")
+        print(f"Flourish embed HTTP status: {response.status_code}")
         response.raise_for_status()
     except requests.RequestException as error:
-        print(f"Could not retrieve source page: {error}")
+        print(f"Could not retrieve Flourish embed: {error}")
         write_json(OUTPUT_FILE, [])
         return
 
-    print(f"Downloaded {len(response.text):,} characters from source page.")
+    print(f"Downloaded {len(response.text):,} characters from Flourish embed.")
 
     flourish_rows = extract_flourish_rows(response.text)
 
