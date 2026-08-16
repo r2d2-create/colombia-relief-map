@@ -1,8 +1,10 @@
+const L = window.L;
+
 let map;
 let markerGroup;
 let userLocationMarker;
 
-// 🎨 Feature 1: Setup Custom Colored Pins based on Boroughs
+// Feature 1: Setup Custom Colored Pins based on Boroughs
 function getBoroughColor(borough) {
     switch (borough) {
         case "Queens": return "orange";
@@ -17,13 +19,13 @@ function createCustomMarker(color) {
     // Generates a clean, modern colored dot pin using Leaflet vector circles
     return L.divIcon({
         className: 'custom-pin',
-        html: `<div style="background-color: ${color}; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.4);"></div>`,
+        html: `<div style="background-color:${color}; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.4);"></div>`,
         iconSize: [14, 14],
         iconAnchor: [7, 7]
     });
 }
 
-// 🚀 Core Map Initialization
+// Core Map Initialization
 function initMap() {
     // Centers map over NYC
     map = L.map('map').setView([40.7128, -74.0060], 11);
@@ -36,7 +38,7 @@ function initMap() {
 
     markerGroup = L.layerGroup().addTo(map);
 
-    // ⏱️ Feature 2: Fetch and render the automated sites.json data
+    // Feature 2: Fetch and render the automated sites.json data
     fetch('sites.json')
         .then(response => response.json())
         .then(data => {
@@ -49,7 +51,7 @@ function initMap() {
             document.getElementById("site-list").innerHTML = "<p style='color:red; padding:15px;'>Waiting for initial scraper data. Please trigger your GitHub Action workflow first!</p>";
         });
 
-    // 🧭 Feature 3: Wire up the Locate Me click action
+    // Feature 3: Wire up the Locate Me click action
     document.getElementById("locate-btn").addEventListener("click", locateUser);
 }
 
@@ -67,9 +69,9 @@ function displaySites(sites) {
         
         marker.bindPopup(`
             <strong>${site.name}</strong><br>
-            <span style="color:#666; font-size:12px;">📍 ${site.borough}</span><br>
+            <span style="color:#666; font-size:12px;">${site.borough}</span><br>
             ${site.address}<br>
-            📞 <a href="tel:${site.phone}">${site.phone}</a><br>
+            <a href="tel:${site.phone}">${site.phone}</a><br>
             <a href="${routingUrl}" target="_blank" class="route-btn">Get Train/Bus Route</a>
         `);
         markerGroup.addLayer(marker);
@@ -81,8 +83,8 @@ function displaySites(sites) {
         card.innerHTML = `
             <strong>${site.name}</strong>
             <p style="margin:4px 0; font-size:13px; color:#555;">${site.address}</p>
-            <p style="margin:2px 0; font-size:12px; color:#888;">📞 ${site.phone}</p>
-            <a href="${routingUrl}" target="_blank" class="route-btn">🗺️ Route via Transit</a>
+            <p style="margin:2px 0; font-size:12px; color:#888;">${site.phone}</p>
+            <a href="${routingUrl}" target="_blank" class="route-btn">Route via Transit</a>
         `;
         
         card.addEventListener("click", () => {
@@ -93,7 +95,7 @@ function displaySites(sites) {
     });
 }
 
-// 🧭 GPS "Locate Me" Engine
+// GPS "Locate Me" Engine
 function locateUser() {
     const btn = document.getElementById("locate-btn");
     btn.innerText = "🌀 Finding you...";
@@ -134,7 +136,7 @@ function filterMarkers() {
     }
 }
 
-// ⏱️ Automated Data Age Timestamp Engine
+// Automated Data Age Timestamp Engine
 function updateTimestamp() {
     const timeElement = document.getElementById("timestamp");
     const now = new Date();
