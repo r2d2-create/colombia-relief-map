@@ -3,40 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NYC Colombia Earthquake Donation Hubs</title>
+    <title>Colombia Relief Map</title>
     
-    <!-- Leaflet Map CSS Stylesheet (I'm using the Leaflet map system since I can test out my map right away) -->
-    <link rel="stylesheet" href="https://cloudflare.com" />
+    <!-- Critical Structural CSS -->
+    <style>
+        html, body { height: 100%; margin: 0; display: flex; background-color: #f8f9fa; }
+        #sidebar { width: 350px; height: 100%; z-index: 5; display: flex; flex-direction: column; }
+        #map { flex-grow: 1; height: 100%; background: #e9ecef; }
+        @media (max-width: 768px) {
+            body { flex-direction: column-reverse; }
+            #sidebar { width: 100%; height: 45%; }
+            #map { height: 55%; }
+        }
+    </style>
+
+    <!-- Async loading for the full stylesheet -->
+    <link rel="stylesheet" href="style.css" media="print" onload="this.media='all'">
     
-    <link rel="stylesheet" href="style.css">
+    <!-- External Dependencies -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Deferred Application Script -->
+    <script src="app.js" defer></script>
 </head>
 <body>
-
     <div id="sidebar">
-        <h2>🇨🇴 NYC Relief Sites</h2>
-        <p>Find donation spots for the Colombian earthquake recovery relative to your location.</p>
-        
-        <!-- Zip Code Filter Form -->
-        <div class="filter-group">
-            <label for="zipFilter">Filter by ZIP Code:</label>
-            <select id="zipFilter" onchange="filterMarkers()">
-                <option value="all">All NYC ZIP Codes</option>
-                <option value="10001">10001 (Manhattan)</option>
-                <option value="11372">11372 (Jackson Heights)</option>
-                <option value="11211">11211 (Williamsburg)</option>
-            </select>
-        </div>
-
-        <div id="site-list">
-            <!-- Active donation sites will appear here -->
-        </div>
+        <!-- Sidebar content -->
     </div>
-
-    <!-- Map Canvas Element -->
     <div id="map"></div>
-
-    <!-- Leaflet Map JavaScript Library -->
-    <script src="https://cloudflare.com"></script>
-    <script src="app.js" defer></script>
 </body>
 </html>
