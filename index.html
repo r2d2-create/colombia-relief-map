@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Colombia Relief Donation Map</title>
 
-  <!-- Leaflet CSS -->
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -15,7 +14,6 @@
 
   <link rel="stylesheet" href="style.css" />
 
-  <!-- Leaflet must load before app.js -->
   <script
     src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
@@ -28,15 +26,29 @@
 <body>
   <aside id="sidebar">
     <header class="sidebar-header">
-      <h1>Colombia Relief Map</h1>
-      <p>
+      <div class="header-top-row">
+        <h1 id="site-title">Colombia Relief Map</h1>
+
+        <button
+          id="language-toggle"
+          class="language-toggle"
+          type="button"
+          aria-label="Switch website language to Spanish"
+        >
+          Español
+        </button>
+      </div>
+
+      <p id="site-subtitle">
         Find current NYC-area donation locations for people affected by the
         Colombia earthquake.
       </p>
     </header>
 
     <section class="filter-group" aria-label="Donation site filters">
-      <label for="zipFilter">Filter donation sites by ZIP code</label>
+      <label id="zip-filter-label" for="zipFilter">
+        Filter donation sites by ZIP code
+      </label>
 
       <select id="zipFilter">
         <option value="all">All ZIP codes</option>
@@ -49,27 +61,39 @@
       <p id="timestamp" aria-live="polite"></p>
     </section>
 
-    <section id="directions-panel" aria-live="polite">
-      <h2>Route planner</h2>
+    <section id="instructions-panel" aria-live="polite">
+      <h2 id="instructions-heading">Instructions/Instrucciones</h2>
 
-      <p id="route-status">
-        Click or tap the map to set your start point, then select a donation
-        site.
+      <p id="instructions-text">
+        Click or tap anywhere on the map to add a red start pin. You can add
+        multiple pins, drag any pin to a new location, or click a pin to remove
+        it. Select a donation site from the list or map to get directions from
+        your currently selected pin.
       </p>
 
-      <label for="route-mode">Travel mode</label>
+      <p id="route-status">
+        Add a start pin, select it, then choose a donation site for directions.
+      </p>
 
-      <select id="route-mode">
-        <option value="transit">Train / bus / transit</option>
-        <option value="drive">Car</option>
-        <option value="walk">Walk</option>
-        <option value="bicycle">Bike</option>
-      </select>
+      <div class="travel-mode-row">
+        <label id="travel-mode-label" for="route-mode">Travel mode</label>
+
+        <select id="route-mode">
+          <option value="transit">Transit</option>
+          <option value="drive">Car</option>
+          <option value="walk">Walk</option>
+          <option value="bicycle">Bike</option>
+        </select>
+      </div>
 
       <ol id="route-instructions"></ol>
     </section>
 
-    <section id="site-list" aria-live="polite">
+    <section
+      id="site-list"
+      aria-label="Donation site locations"
+      aria-live="polite"
+    >
       <p class="loading-message">Loading verified donation sites…</p>
     </section>
   </aside>
