@@ -31,11 +31,23 @@
 
         <button
           id="language-toggle"
-          class="language-toggle"
+          class="language-switch"
           type="button"
-          aria-label="Switch website language to Spanish"
+          role="switch"
+          aria-checked="false"
+          aria-label="Switch website language"
         >
-          Español
+          <span class="language-switch-label language-switch-label-en">
+            English
+          </span>
+
+          <span class="language-switch-track" aria-hidden="true">
+            <span class="language-switch-thumb"></span>
+          </span>
+
+          <span class="language-switch-label language-switch-label-es">
+            Español
+          </span>
         </button>
       </div>
 
@@ -45,56 +57,125 @@
       </p>
     </header>
 
-    <section class="filter-group" aria-label="Donation site filters">
-      <label id="zip-filter-label" for="zipFilter">
-        Filter donation sites by ZIP code
-      </label>
+    <section id="sidebar-home">
+      <section class="filter-group" aria-label="Donation site filters">
+        <label id="zip-filter-label" for="zipFilter">
+          Filter donation sites by ZIP code
+        </label>
 
-      <select id="zipFilter">
-        <option value="all">All ZIP codes</option>
-      </select>
-
-      <button id="locate-btn" type="button">
-        📍 Use My Current Location
-      </button>
-
-      <p id="timestamp" aria-live="polite"></p>
-    </section>
-
-    <section id="instructions-panel" aria-live="polite">
-      <h2 id="instructions-heading">Instructions/Instrucciones</h2>
-
-      <p id="instructions-text">
-        Click or tap anywhere on the map to add a red start pin. You can add
-        multiple pins, drag any pin to a new location, or click a pin to remove
-        it. Select a donation site from the list or map to get directions from
-        your currently selected pin.
-      </p>
-
-      <p id="route-status">
-        Add a start pin, select it, then choose a donation site for directions.
-      </p>
-
-      <div class="travel-mode-row">
-        <label id="travel-mode-label" for="route-mode">Travel mode</label>
-
-        <select id="route-mode">
-          <option value="transit">Transit</option>
-          <option value="drive">Car</option>
-          <option value="walk">Walk</option>
-          <option value="bicycle">Bike</option>
+        <select id="zipFilter">
+          <option value="all">All ZIP codes</option>
         </select>
-      </div>
 
-      <ol id="route-instructions"></ol>
+        <button id="locate-btn" type="button">
+          📍 Use My Current Location
+        </button>
+
+        <p id="timestamp" aria-live="polite"></p>
+      </section>
+
+      <section id="instructions-panel" aria-live="polite">
+        <h2 id="instructions-heading">Instructions</h2>
+
+        <p id="instructions-text">
+          Click or tap anywhere on the map to add a red start pin. You can also
+          add pins with the button below, press and hold a pin to drag it, and
+          click or tap a pin to select or delete it. Select a donation site from
+          the map or list to see the location’s details and get directions.
+        </p>
+
+        <button id="add-pin-btn" class="secondary-button" type="button">
+          Add a start pin
+        </button>
+      </section>
+
+      <section
+        id="site-list"
+        aria-label="Donation site locations"
+        aria-live="polite"
+      >
+        <p class="loading-message">Loading verified donation sites…</p>
+      </section>
     </section>
 
     <section
-      id="site-list"
-      aria-label="Donation site locations"
+      id="site-detail-panel"
+      class="sidebar-view"
+      hidden
       aria-live="polite"
     >
-      <p class="loading-message">Loading verified donation sites…</p>
+      <button id="back-to-list-btn" class="back-button" type="button">
+        ← Back to donation sites
+      </button>
+
+      <div id="site-detail-content"></div>
+    </section>
+
+    <section
+      id="directions-panel"
+      class="sidebar-view"
+      hidden
+      aria-live="polite"
+    >
+      <button id="back-from-directions-btn" class="back-button" type="button">
+        ← Back to donation site
+      </button>
+
+      <h2 id="directions-heading">Directions</h2>
+
+      <div class="direction-locations">
+        <div class="direction-location-card">
+          <label id="start-point-label" for="start-pin-select">
+            Starting point
+          </label>
+
+          <select id="start-pin-select">
+            <option value="">Select a start pin</option>
+          </select>
+
+          <button
+            id="add-pin-from-directions-btn"
+            class="secondary-button"
+            type="button"
+          >
+            Add a start pin
+          </button>
+        </div>
+
+        <button
+          id="swap-directions-btn"
+          class="swap-directions-btn"
+          type="button"
+          aria-label="Reverse directions"
+          title="Reverse directions"
+        >
+          ⇅
+        </button>
+
+        <div class="direction-location-card">
+          <span id="destination-label" class="direction-label">
+            Destination
+          </span>
+
+          <strong id="directions-destination-name"></strong>
+          <span id="directions-destination-address"></span>
+        </div>
+      </div>
+
+      <label id="travel-mode-label" for="route-mode">Travel mode</label>
+
+      <select id="route-mode">
+        <option value="transit">Transit</option>
+        <option value="drive">Car</option>
+        <option value="walk">Walk</option>
+        <option value="bicycle">Bike</option>
+      </select>
+
+      <p id="route-status">
+        Select a start pin and travel mode to get directions.
+      </p>
+
+      <ol id="route-instructions"></ol>
     </section>
   </aside>
 
