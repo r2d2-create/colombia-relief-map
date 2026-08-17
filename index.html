@@ -29,26 +29,51 @@
       <div class="header-top-row">
         <h1 id="site-title">Colombia Relief Map</h1>
 
-        <button
-          id="language-toggle"
-          class="language-switch"
-          type="button"
-          role="switch"
-          aria-checked="false"
-          aria-label="Switch website language"
-        >
-          <span class="language-switch-label language-switch-label-en">
-            English
-          </span>
+        <div class="cyber-toggle-wrapper">
+          <input
+            class="cyber-toggle-checkbox"
+            id="cyber-toggle"
+            type="checkbox"
+            aria-label="Switch website language between English and Spanish"
+          />
 
-          <span class="language-switch-track" aria-hidden="true">
-            <span class="language-switch-thumb"></span>
-          </span>
+          <label class="cyber-toggle" for="cyber-toggle">
+            <span class="cyber-toggle-track">
+              <span class="cyber-toggle-track-glow"></span>
 
-          <span class="language-switch-label language-switch-label-es">
-            Español
-          </span>
-        </button>
+              <span class="cyber-toggle-track-dots">
+                <span class="cyber-toggle-track-dot"></span>
+                <span class="cyber-toggle-track-dot"></span>
+                <span class="cyber-toggle-track-dot"></span>
+              </span>
+            </span>
+
+            <span class="cyber-toggle-thumb">
+              <span class="cyber-toggle-thumb-shadow"></span>
+              <span class="cyber-toggle-thumb-highlight"></span>
+
+              <span class="cyber-toggle-thumb-icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                  <path
+                    d="M16.5 12c0-2.48-2.02-4.5-4.5-4.5s-4.5 2.02-4.5 4.5 2.02 4.5 4.5 4.5 4.5-2.02 4.5-4.5zm-4.5 7.5c-4.14 0-7.5-3.36-7.5-7.5s3.36-7.5 7.5-7.5 7.5 3.36 7.5 7.5-3.36 7.5-7.5 7.5zm0-16.5c-4.97 0-9 4.03-9 9h-3l3.89 3.89.07.14 4.04-4.03h-3c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42c1.63 1.63 3.87 2.64 6.36 2.64 4.97 0 9-4.03 9-9s-4.03-9-9-9z"
+                  ></path>
+                </svg>
+              </span>
+            </span>
+
+            <span class="cyber-toggle-particles" aria-hidden="true">
+              <span class="cyber-toggle-particle"></span>
+              <span class="cyber-toggle-particle"></span>
+              <span class="cyber-toggle-particle"></span>
+              <span class="cyber-toggle-particle"></span>
+            </span>
+          </label>
+
+          <div class="cyber-toggle-labels" aria-hidden="true">
+            <span class="cyber-toggle-label-english">English</span>
+            <span class="cyber-toggle-label-espanol">Español</span>
+          </div>
+        </div>
       </div>
 
       <p id="site-subtitle">
@@ -78,15 +103,11 @@
         <h2 id="instructions-heading">Instructions</h2>
 
         <p id="instructions-text">
-          Click or tap anywhere on the map to add a red start pin. You can also
-          add pins with the button below, press and hold a pin to drag it, and
-          click or tap a pin to select or delete it. Select a donation site from
-          the map or list to see the location’s details and get directions.
+          Click or tap anywhere on the map to add a red start pin. You can add
+          multiple pins, press and hold a pin to drag it, and click or tap a pin
+          to select or delete it. Select a donation site from the map or list
+          to view the location’s details and get directions.
         </p>
-
-        <button id="add-pin-btn" class="secondary-button" type="button">
-          Add a start pin
-        </button>
       </section>
 
       <section
@@ -132,14 +153,6 @@
           <select id="start-pin-select">
             <option value="">Select a start pin</option>
           </select>
-
-          <button
-            id="add-pin-from-directions-btn"
-            class="secondary-button"
-            type="button"
-          >
-            Add a start pin
-          </button>
         </div>
 
         <button
