@@ -1,7 +1,7 @@
 import html
 import json
+import os
 import re
-import time
 from pathlib import Path
 
 import requests
@@ -17,9 +17,8 @@ GEOCODE_CACHE_FILE = PROJECT_ROOT / "geocode_cache.json"
 PROJECT_URL = "https://github.com/r2d2-create/colombia-relief-map"
 CONTACT_EMAIL = "end259@nyu.edu"
 
-NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
-GEOCODE_DELAY_SECONDS = 1.1
-NYC_VIEWBOX = "-74.30,40.45,-73.65,40.95"
+GEOCLIENT_API_KEY = os.environ.get("NYC_GEOCLIENT_API_KEY", "").strip()
+GEOCLIENT_SEARCH_URL = "https://api.nyc.gov/geoclient/v2/search.json"
 
 SOURCE_HEADERS = {
     "User-Agent": (
@@ -30,49 +29,9 @@ SOURCE_HEADERS = {
     "Accept-Language": "en-US,en;q=0.9",
 }
 
-GEOCODE_HEADERS = {
-    "User-Agent": (
-        f"ColombiaReliefDonationMap/1.0 "
-        f"({PROJECT_URL}; contact: {CONTACT_EMAIL})"
-    ),
+GEOCLIENT_HEADERS = {
     "Accept": "application/json",
-    "Accept-Language": "en-US,en;q=0.9",
-}
-
-
-# Use this only for locations you have independently verified.
-# Each key is a normalized source address, not a geocoding query.
-MANUAL_GEOCODE_OVERRIDES = {
-    "103 29 101 street ozone park queens new york ny usa": {
-        "lat": 40.685666,
-        "lng": -73.844546,
-        "geocoded_address": "103-29 101st Street, Ozone Park, NY 11416, United States",
-        "verification": "Manual override — verify against the organization before publishing.",
-    },
-    "150 12 14th avenue suite 201 whitestone ny 11357 usa": {
-        "lat": 40.792056,
-        "lng": -73.816315,
-        "geocoded_address": "150-12 14th Avenue, Whitestone, NY 11357, United States",
-        "verification": "Manual override — verify against the organization before publishing.",
-    },
-    "42 woodcleft avenue freeport ny 11520 usa": {
-        "lat": 40.644084,
-        "lng": -73.584172,
-        "geocoded_address": "42 Woodcleft Avenue, Freeport, NY 11520, United States",
-        "verification": "Manual override — verify against the organization before publishing.",
-    },
-    "37 53 90th st ste 13b jackson heights ny 11372 usa": {
-        "lat": 40.751577,
-        "lng": -73.875383,
-        "geocoded_address": "37-53 90th Street, Jackson Heights, NY 11372, United States",
-        "verification": "Manual override — verify against the organization before publishing.",
-    },
-    "41 40 junction blvd corona ny 11368 usa": {
-        "lat": 40.748364,
-        "lng": -73.869428,
-        "geocoded_address": "41-40 Junction Boulevard, Corona, NY 11368, United States",
-        "verification": "Manual override — verify against the organization before publishing.",
-    },
+    "Ocp-Apim-Subscription-Key": GEOCLIENT_API_KEY,
 }
 
 
@@ -88,7 +47,7 @@ def write_json(file_path, data):
 
 
 def load_json(file_path, fallback):
-    """Load an existing JSON file, returning fallback if unavailable."""
+    """Load existing JSON, returning fallback if unavailable or invalid."""
     if not file_path.exists():
         return fallback
 
@@ -113,7 +72,7 @@ def clean_text(value):
 
 
 def normalize_text(value):
-    """Normalize text for deduplication and manual-override matching."""
+    """Normalize text for matching, deduplication, and cache keys."""
     value = clean_text(value).lower()
     value = re.sub(r"[^a-z0-9\s]", " ", value)
 
@@ -128,33 +87,33 @@ def extract_zip(address_text):
 
 
 def normalize_borough(value):
-    """Return a consistent borough/county label."""
+    """Return a consistent NYC borough label."""
     text = normalize_text(value)
 
-    names = {
+    boroughs = {
         "queens": "Queens",
         "brooklyn": "Brooklyn",
         "bronx": "Bronx",
         "manhattan": "Manhattan",
         "staten island": "Staten Island",
-        "nassau": "Nassau County",
     }
 
-    for keyword, standardized_name in names.items():
+    for keyword, borough_name in boroughs.items():
         if keyword in text:
-            return standardized_name
+            return borough_name
 
     return "Other"
 
 
 def normalize_address_for_geocoding(address):
     """
-    Create a geocoder-friendly street address.
+    Prepare an address for Geoclient.
 
-    - Preserves/restores Queens-style house numbers: 91 31 -> 91-31.
-    - Removes suite, unit, floor, apartment, and ground-floor text.
-    - Standardizes common street abbreviations.
-    - Adds a comma before known neighborhood names if the source omitted it.
+    Preserves/restores Queens-style numbers such as:
+    41 40 Junction Blvd -> 41-40 Junction Boulevard
+
+    Removes suite, unit, floor, and apartment details because Geoclient
+    geocodes the building/street address rather than an office suite.
     """
     address = clean_text(address)
 
@@ -172,7 +131,7 @@ def normalize_address_for_geocoding(address):
         flags=re.IGNORECASE,
     )
 
-    replacements = {
+    street_replacements = {
         r"\bblvd\.?\b": "Boulevard",
         r"\bave\.?\b": "Avenue",
         r"\bst\.?\b": "Street",
@@ -184,19 +143,12 @@ def normalize_address_for_geocoding(address):
         r"\bhwy\.?\b": "Highway",
     }
 
-    for pattern, replacement in replacements.items():
+    for pattern, replacement in street_replacements.items():
         address = re.sub(pattern, replacement, address, flags=re.IGNORECASE)
 
-    neighborhood_names = (
-        "Corona|Elmhurst|Jackson Heights|East Elmhurst|Ozone Park|"
-        "Woodside|Whitestone|Woodhaven|Long Island City|Freeport|"
-        "Astoria|Flushing|Jamaica|Ridgewood|Sunnyside"
-    )
-
     address = re.sub(
-        rf"\b(Boulevard|Avenue|Street|Road|Drive|Place|Court|Parkway)\s+"
-        rf"({neighborhood_names})\b",
-        r"\1, \2",
+        r"\b103-29\s+101\s+Street\b",
+        "103-29 101st Street",
         address,
         flags=re.IGNORECASE,
     )
@@ -207,111 +159,38 @@ def normalize_address_for_geocoding(address):
     return address.strip(" ,")
 
 
-def geocode_cache_key(query):
+def split_house_number_and_street(address):
     """
-    Create a v3 cache key.
+    Split normalized address into house number and street name.
 
-    v3 intentionally separates this improved strategy from older cached
-    no-match results created by previous versions of the scraper.
+    Example:
+    41-40 Junction Boulevard, Corona, NY 11368
+    -> ('41-40', 'Junction Boulevard')
     """
-    query = clean_text(query).lower()
-    query = re.sub(r"(?<!\d)-(?!\d)", " ", query)
-    query = re.sub(r"[^a-z0-9\s-]", " ", query)
-    query = re.sub(r"\s+", " ", query).strip()
+    street_part = address.split(",", maxsplit=1)[0].strip()
 
-    return f"v3:{query}"
+    match = re.match(
+        r"^(\d{1,4}(?:-\d{1,4})?)\s+(.+)$",
+        street_part,
+    )
 
+    if not match:
+        return "", street_part
 
-def location_context(borough):
-    """Return the appropriate city/borough context for a source record."""
-    contexts = {
-        "Queens": "Queens, NY, USA",
-        "Brooklyn": "Brooklyn, NY, USA",
-        "Bronx": "Bronx, NY, USA",
-        "Manhattan": "Manhattan, NY, USA",
-        "Staten Island": "Staten Island, NY, USA",
-        "Nassau County": "Freeport, Nassau County, NY, USA",
-    }
-
-    return contexts.get(borough, "New York, NY, USA")
+    return match.group(1), match.group(2).strip()
 
 
-def address_for_geocoding(address, borough):
-    """Build the first, full free-form Nominatim query."""
-    cleaned = normalize_address_for_geocoding(address)
-    address_lower = cleaned.lower()
+def geocode_cache_key(address, borough):
+    """Return a v4 cache key for Geoclient lookups."""
+    normalized_address = normalize_address_for_geocoding(address).lower()
+    normalized_address = re.sub(r"[^a-z0-9\s-]", " ", normalized_address)
+    normalized_address = re.sub(r"\s+", " ", normalized_address).strip()
 
-    has_state = bool(re.search(r"\bny\b", address_lower))
-    has_new_york = "new york" in address_lower
-    has_zip = bool(extract_zip(cleaned))
-
-    if has_state or has_new_york or has_zip:
-        return f"{cleaned}, USA"
-
-    return f"{cleaned}, {location_context(borough)}"
-
-
-def simplified_address_for_geocoding(address, borough):
-    """
-    Build a fallback query when the complete query has no Nominatim match.
-
-    It removes a ZIP code and state/country wording while retaining the
-    house number, street, and borough/neighborhood context.
-    """
-    cleaned = normalize_address_for_geocoding(address)
-
-    cleaned = re.sub(r"\bNY\s+\d{5}(?:-\d{4})?\b", "", cleaned, flags=re.I)
-    cleaned = re.sub(r"\bNew York\b", "", cleaned, flags=re.I)
-    cleaned = re.sub(r"\bUSA\b", "", cleaned, flags=re.I)
-    cleaned = re.sub(r"\s*,\s*", ", ", cleaned)
-    cleaned = re.sub(r"\s+", " ", cleaned).strip(" ,")
-
-    return f"{cleaned}, {location_context(borough)}"
-
-
-def request_nominatim(query):
-    """Send one cached-safe, rate-limited Nominatim free-form query."""
-    parameters = {
-        "q": query,
-        "format": "jsonv2",
-        "addressdetails": 1,
-        "limit": 1,
-        "countrycodes": "us",
-        "viewbox": NYC_VIEWBOX,
-        "bounded": 1,
-        "email": CONTACT_EMAIL,
-    }
-
-    try:
-        response = requests.get(
-            NOMINATIM_URL,
-            params=parameters,
-            headers=GEOCODE_HEADERS,
-            timeout=30,
-        )
-        response.raise_for_status()
-        return response.json()
-    except (requests.RequestException, ValueError) as error:
-        print(f"Temporary Nominatim failure for '{query}': {error}")
-        return None
-    finally:
-        time.sleep(GEOCODE_DELAY_SECONDS)
-
-
-def result_to_location(result):
-    """Convert one Nominatim result into the map's location schema."""
-    try:
-        return {
-            "lat": float(result["lat"]),
-            "lng": float(result["lon"]),
-            "geocoded_address": clean_text(result.get("display_name", "")),
-        }
-    except (KeyError, TypeError, ValueError):
-        return None
+    return f"v4:{borough.lower()}:{normalized_address}"
 
 
 def extract_balanced_json_object(text, start_index):
-    """Return the complete nested JSON object starting at an opening brace."""
+    """Return the complete JSON object beginning at an opening brace."""
     if start_index >= len(text) or text[start_index] != "{":
         return None
 
@@ -345,7 +224,7 @@ def extract_balanced_json_object(text, start_index):
 
 
 def extract_flourish_rows(page_html):
-    """Extract the Flourish `_Flourish_data` rows from the embed HTML."""
+    """Extract the Flourish `_Flourish_data` rows from embed HTML."""
     assignment_match = re.search(r"\b_Flourish_data\s*=\s*", page_html)
 
     if not assignment_match:
@@ -421,16 +300,114 @@ def source_rows_to_sites(rows):
     return sites
 
 
+def first_value(data, keys):
+    """Return the first non-empty value found for a sequence of keys."""
+    for key in keys:
+        value = data.get(key)
+
+        if value not in (None, ""):
+            return value
+
+    return ""
+
+
+def geoclient_result_to_location(response_data):
+    """
+    Extract coordinates from a Geoclient V2 search response.
+
+    The API can return candidates in different nested shapes, so this checks
+    common result layouts without exposing your API key or raw response.
+    """
+    candidates = []
+
+    if isinstance(response_data, list):
+        candidates = response_data
+    elif isinstance(response_data, dict):
+        for key in ("results", "candidates", "addresses"):
+            value = response_data.get(key)
+
+            if isinstance(value, list):
+                candidates = value
+                break
+
+        if not candidates:
+            candidates = [response_data]
+
+    for candidate in candidates:
+        if not isinstance(candidate, dict):
+            continue
+
+        fields = candidate
+
+        for nested_key in ("response", "address", "result", "geocodedAddress"):
+            nested = candidate.get(nested_key)
+
+            if isinstance(nested, dict):
+                fields = {**candidate, **nested}
+
+        latitude = first_value(
+            fields,
+            ("latitude", "lat", "yCoordinate", "y_coordinate"),
+        )
+        longitude = first_value(
+            fields,
+            ("longitude", "lon", "lng", "xCoordinate", "x_coordinate"),
+        )
+
+        try:
+            lat = float(latitude)
+            lng = float(longitude)
+        except (TypeError, ValueError):
+            continue
+
+        house_number = first_value(
+            fields,
+            ("houseNumber", "house_number", "houseNumberDisplayFormat"),
+        )
+        street_name = first_value(
+            fields,
+            ("streetName", "street", "streetName1", "streetName2"),
+        )
+        borough = first_value(
+            fields,
+            ("boroughName", "borough", "firstBoroughName"),
+        )
+        zip_code = first_value(
+            fields,
+            ("zipCode", "zip", "zipCode5"),
+        )
+
+        address_parts = [
+            " ".join(part for part in (str(house_number), str(street_name)) if part).strip(),
+            str(borough).strip(),
+            str(zip_code).strip(),
+        ]
+
+        geocoded_address = ", ".join(part for part in address_parts if part)
+
+        return {
+            "lat": lat,
+            "lng": lng,
+            "geocoded_address": geocoded_address or "NYC Geoclient result",
+            "geocode_method": "nyc_geoclient_v2",
+        }
+
+    return None
+
+
 def geocode_address(address, borough, cache):
-    """Return a cached, manually overridden, or Nominatim geocoded location."""
-    override_key = normalize_text(address)
+    """Geocode an NYC address through Geoclient V2 and cache the result."""
+    if borough == "Other":
+        print(f"Skipped non-NYC record: {address}")
+        return None
 
-    if override_key in MANUAL_GEOCODE_OVERRIDES:
-        print(f"Using manual geocode override: {address}")
-        return MANUAL_GEOCODE_OVERRIDES[override_key]
+    if not GEOCLIENT_API_KEY:
+        raise RuntimeError(
+            "NYC_GEOCLIENT_API_KEY is missing. "
+            "Add it as a GitHub Actions secret and pass it to the workflow."
+        )
 
-    primary_query = address_for_geocoding(address, borough)
-    cache_key = geocode_cache_key(primary_query)
+    cache_key = geocode_cache_key(address, borough)
     cached_location = cache.get(cache_key)
 
     if isinstance(cached_location, dict):
@@ -438,43 +415,61 @@ def geocode_address(address, borough, cache):
         lng = cached_location.get("lng")
 
         if isinstance(lat, (int, float)) and isinstance(lng, (int, float)):
-            print(f"Using cached geocode: {address}")
+            print(f"Using cached Geoclient result: {address}")
             return cached_location
 
     if cache_key in cache and cached_location is None:
-        print(f"Using cached no-match result: {address}")
+        print(f"Using cached Geoclient no-match result: {address}")
         return None
 
-    print(f"Geocoding: {primary_query}")
-    results = request_nominatim(primary_query)
+    normalized_address = normalize_address_for_geocoding(address)
+    house_number, street = split_house_number_and_street(normalized_address)
 
-    if results:
-        location = result_to_location(results[0])
+    if not house_number or not street:
+        print(f"Could not separate house number and street: {address}")
+        cache[cache_key] = None
+        write_json(GEOCODE_CACHE_FILE, cache)
+        return None
 
-        if location:
-            cache[cache_key] = location
-            write_json(GEOCODE_CACHE_FILE, cache)
-            return location
+    parameters = {
+        "houseNumber": house_number,
+        "street": street,
+        "borough": borough,
+    }
 
-    fallback_query = simplified_address_for_geocoding(address, borough)
+    print(
+        f"Geocoding with Geoclient: "
+        f"houseNumber={house_number}, street={street}, borough={borough}"
+    )
 
-    if fallback_query != primary_query:
-        print(f"Retrying simplified query: {fallback_query}")
-        fallback_results = request_nominatim(fallback_query)
+    try:
+        response = requests.get(
+            GEOCLIENT_SEARCH_URL,
+            params={
+                "Input": f"{house_number} {street}, {borough}, NY",
+            },
+            headers=GEOCLIENT_HEADERS,
+            timeout=30,
+        )
+        response.raise_for_status()
+        response_data = response.json()
+    except (requests.RequestException, ValueError) as error:
+        print(f"Temporary Geoclient failure for '{address}': {error}")
+        print("The failure was not cached, so a later run can retry it.")
+        return None
 
-        if fallback_results:
-            location = result_to_location(fallback_results[0])
+    location = geoclient_result_to_location(response_data)
 
-            if location:
-                cache[cache_key] = location
-                write_json(GEOCODE_CACHE_FILE, cache)
-                return location
+    if location is None:
+        print(f"No Geoclient result found for: {address}")
+        cache[cache_key] = None
+        write_json(GEOCODE_CACHE_FILE, cache)
+        return None
 
-    print(f"No geocode result found for: {address}")
-    cache[cache_key] = None
+    cache[cache_key] = location
     write_json(GEOCODE_CACHE_FILE, cache)
 
-    return None
+    return location
 
 
 def build_map_sites(source_sites):
@@ -504,6 +499,10 @@ def build_map_sites(source_sites):
                 "lng": location["lng"],
                 "source_url": SOURCE_URL,
                 "geocoded_address": location["geocoded_address"],
+                "geocode_method": location.get(
+                    "geocode_method",
+                    "nyc_geoclient_v2",
+                ),
             }
         )
 
@@ -512,7 +511,7 @@ def build_map_sites(source_sites):
 
 
 def auto_scrape():
-    """Download source data, geocode sites, and save `sites.json`."""
+    """Download source data, geocode NYC sites, and write sites.json."""
     try:
         response = requests.get(
             FLOURISH_EMBED_URL,
