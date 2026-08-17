@@ -27,6 +27,8 @@ jobs:
           pip install requests
 
       - name: Run scraper script
+        env:
+          NYC_GEOCLIENT_API_KEY: ${{ secrets.NYC_GEOCLIENT_API_KEY }}
         run: python scraper.py
 
       - name: Commit updated donation data and geocoding cache
