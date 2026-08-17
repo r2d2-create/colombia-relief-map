@@ -230,5 +230,119 @@
     "lat": 40.7387921,
     "lng": -73.878779,
     "geocoded_address": "Corona Avenue, Elmhurst, Queens, Queens County, New York, 11373, United States"
+  },
+  "v4:queens:91-31 queens boulevard elmhurst": {
+    "lat": 40.733324,
+    "lng": -73.869796,
+    "geocoded_address": "91-31, QUEENS, 11373",
+    "geocode_method": "nyc_geoclient_v2"
+  },
+  "v4:queens:85-09 northern boulevard jackson heights": {
+    "lat": 40.755897,
+    "lng": -73.882241,
+    "geocoded_address": "85-09, QUEENS, 11372",
+    "geocode_method": "nyc_geoclient_v2"
+  },
+  "v4:queens:63-10 broadway woodside": {
+    "lat": 40.749934,
+    "lng": -73.899092,
+    "geocoded_address": "63-10, QUEENS, 11377",
+    "geocode_method": "nyc_geoclient_v2"
+  },
+  "v4:bronx:2425 eastchester road bronx": {
+    "lat": 40.861497,
+    "lng": -73.843288,
+    "geocoded_address": "2425, BRONX, 10469",
+    "geocode_method": "nyc_geoclient_v2"
+  },
+  "v4:queens:103-29 101st street ozone park": {
+    "lat": 40.682728,
+    "lng": -73.840236,
+    "geocoded_address": "103-29, QUEENS, 11417",
+    "geocode_method": "nyc_geoclient_v2"
+  },
+  "v4:queens:92-15 northern boulevard east elmhurst": {
+    "lat": 40.756571,
+    "lng": -73.875836,
+    "geocoded_address": "92-15, QUEENS, 11372",
+    "geocode_method": "nyc_geoclient_v2"
+  },
+  "v4:queens:83-03 northern boulevard jackson heights": {
+    "lat": 40.755682,
+    "lng": -73.884288,
+    "geocoded_address": "83-03, QUEENS, 11372",
+    "geocode_method": "nyc_geoclient_v2"
+  },
+  "v4:queens:79-11 northern boulevard jackson heights": {
+    "lat": 40.755296,
+    "lng": -73.887952,
+    "geocoded_address": "79-11, QUEENS, 11372",
+    "geocode_method": "nyc_geoclient_v2"
+  },
+  "v4:queens:84-17 northern boulevard jackson heights": {
+    "lat": 40.755791,
+    "lng": -73.883262,
+    "geocoded_address": "84-17, QUEENS, 11372",
+    "geocode_method": "nyc_geoclient_v2"
+  },
+  "v4:queens:105-15 northern boulevard east elmhurst": {
+    "lat": 40.757742,
+    "lng": -73.863489,
+    "geocoded_address": "105-15, QUEENS, 11368",
+    "geocode_method": "nyc_geoclient_v2"
+  },
+  "v4:queens:47-09 30th street long island city": {
+    "lat": 40.742922,
+    "lng": -73.937716,
+    "geocoded_address": "47-09, QUEENS, 11101",
+    "geocode_method": "nyc_geoclient_v2"
+  },
+  "v4:brooklyn:5 debevoise street brooklyn": {
+    "lat": 40.701563,
+    "lng": -73.942934,
+    "geocoded_address": "5, BROOKLYN, 11206",
+    "geocode_method": "nyc_geoclient_v2"
+  },
+  "v4:queens:150-12 14th avenue whitestone ny 11357": {
+    "lat": 40.788959,
+    "lng": -73.813261,
+    "geocoded_address": "150-12, QUEENS, 11357",
+    "geocode_method": "nyc_geoclient_v2"
+  },
+  "v4:queens:94-28 northern boulevard jackson heights ny 11372": {
+    "lat": 40.756807,
+    "lng": -73.873533,
+    "geocoded_address": "94-28, QUEENS, 11372",
+    "geocode_method": "nyc_geoclient_v2"
+  },
+  "v4:queens:95-02 northern boulevard jackson heights ny 11373": {
+    "lat": 40.756858,
+    "lng": -73.872963,
+    "geocoded_address": "95-02, QUEENS, 11372",
+    "geocode_method": "nyc_geoclient_v2"
+  },
+  "v4:queens:75-16 rockaway boulevard woodhaven ny 11421": {
+    "lat": 40.685823,
+    "lng": -73.864981,
+    "geocoded_address": "75-16, QUEENS, 11421",
+    "geocode_method": "nyc_geoclient_v2"
+  },
+  "v4:queens:37-53 90th street jackson heights ny 11372": {
+    "lat": 40.74943,
+    "lng": -73.876658,
+    "geocoded_address": "37-53, QUEENS, 11372",
+    "geocode_method": "nyc_geoclient_v2"
+  },
+  "v4:queens:41-40 junction boulevard corona ny 11368": {
+    "lat": 40.746794,
+    "lng": -73.868391,
+    "geocoded_address": "41-40, QUEENS, 11368",
+    "geocode_method": "nyc_geoclient_v2"
+  },
+  "v4:queens:93-15 corona avenue elmhurst ny 11373": {
+    "lat": 40.742411,
+    "lng": -73.871146,
+    "geocoded_address": "93-15, QUEENS, 11373",
+    "geocode_method": "nyc_geoclient_v2"
   }
 }

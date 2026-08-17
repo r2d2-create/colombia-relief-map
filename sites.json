@@ -5,10 +5,11 @@
     "borough": "Queens",
     "zip": "",
     "phone": "(718) 205-3435",
-    "lat": 40.733679,
-    "lng": -73.869388,
+    "lat": 40.733324,
+    "lng": -73.869796,
     "source_url": "https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/",
-    "geocoded_address": "91-31, Queens Boulevard, Elmhurst, Queens, Queens County, New York, 11373, United States"
+    "geocoded_address": "91-31, QUEENS, 11373",
+    "geocode_method": "nyc_geoclient_v2"
   },
   {
     "name": "Kabu Lounge",
@@ -16,10 +17,11 @@
     "borough": "Queens",
     "zip": "",
     "phone": "(718) 429-0321",
-    "lat": 40.7561255,
-    "lng": -73.8800926,
+    "lat": 40.755897,
+    "lng": -73.882241,
     "source_url": "https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/",
-    "geocoded_address": "Northern Boulevard, Jackson Heights, Queens, Queens County, New York, 11372, United States"
+    "geocoded_address": "85-09, QUEENS, 11372",
+    "geocode_method": "nyc_geoclient_v2"
   },
   {
     "name": "Praga",
@@ -27,10 +29,11 @@
     "borough": "Queens",
     "zip": "",
     "phone": "(718) 905-0407",
-    "lat": 40.7497051,
-    "lng": -73.8988954,
+    "lat": 40.749934,
+    "lng": -73.899092,
     "source_url": "https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/",
-    "geocoded_address": "Praga Tapas Bar, 63-10, Broadway, Woodside, Queens, Queens County, New York, 11377, United States"
+    "geocoded_address": "63-10, QUEENS, 11377",
+    "geocode_method": "nyc_geoclient_v2"
   },
   {
     "name": "Bronx Foot Specialist",
@@ -38,10 +41,23 @@
     "borough": "Bronx",
     "zip": "",
     "phone": "(718) 881-7990",
-    "lat": 40.8617738,
-    "lng": -73.843726,
+    "lat": 40.861497,
+    "lng": -73.843288,
     "source_url": "https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/",
-    "geocoded_address": "2425, Eastchester Road, The Bronx, Bronx County, New York, 10469, United States"
+    "geocoded_address": "2425, BRONX, 10469",
+    "geocode_method": "nyc_geoclient_v2"
+  },
+  {
+    "name": "P&S Custom Tailoring",
+    "address": "103-29 101 Street, Ozone Park",
+    "borough": "Queens",
+    "zip": "",
+    "phone": "(718) 738-4205",
+    "lat": 40.682728,
+    "lng": -73.840236,
+    "source_url": "https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/",
+    "geocoded_address": "103-29, QUEENS, 11417",
+    "geocode_method": "nyc_geoclient_v2"
   },
   {
     "name": "115th Precinct - NYPD",
@@ -49,10 +65,11 @@
     "borough": "Queens",
     "zip": "",
     "phone": "(718) 533-2002",
-    "lat": 40.7571813,
-    "lng": -73.8700222,
+    "lat": 40.756571,
+    "lng": -73.875836,
     "source_url": "https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/",
-    "geocoded_address": "Northern Boulevard, East Elmhurst, Queens, Queens County, New York, 11369, United States"
+    "geocoded_address": "92-15, QUEENS, 11372",
+    "geocode_method": "nyc_geoclient_v2"
   },
   {
     "name": "Seba Seba",
@@ -60,10 +77,11 @@
     "borough": "Queens",
     "zip": "",
     "phone": "(718) 335-4548",
-    "lat": 40.755897,
-    "lng": -73.8842603,
+    "lat": 40.755682,
+    "lng": -73.884288,
     "source_url": "https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/",
-    "geocoded_address": "83-03, Northern Boulevard, Jackson Heights, Queens, Queens County, New York, 11370, United States"
+    "geocoded_address": "83-03, QUEENS, 11372",
+    "geocode_method": "nyc_geoclient_v2"
   },
   {
     "name": "Salvaje Social Club",
@@ -71,10 +89,11 @@
     "borough": "Queens",
     "zip": "",
     "phone": "(929) 799-7729",
-    "lat": 40.7554714,
-    "lng": -73.8876611,
+    "lat": 40.755296,
+    "lng": -73.887952,
     "source_url": "https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/",
-    "geocoded_address": "79-11, Northern Boulevard, Jackson Heights, Queens, Queens County, New York, 11370, United States"
+    "geocoded_address": "79-11, QUEENS, 11372",
+    "geocode_method": "nyc_geoclient_v2"
   },
   {
     "name": "Lechoneria",
@@ -82,10 +101,11 @@
     "borough": "Queens",
     "zip": "",
     "phone": "(347) 527-1613",
-    "lat": 40.7560639,
-    "lng": -73.8828926,
+    "lat": 40.755791,
+    "lng": -73.883262,
     "source_url": "https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/",
-    "geocoded_address": "84-17, Northern Boulevard, Jackson Heights, Queens, Queens County, New York, 11370, United States"
+    "geocoded_address": "84-17, QUEENS, 11372",
+    "geocode_method": "nyc_geoclient_v2"
   },
   {
     "name": "Crece Family Enrichment Center",
@@ -93,10 +113,11 @@
     "borough": "Queens",
     "zip": "",
     "phone": "(917) 724-9279",
-    "lat": 40.7575888,
-    "lng": -73.8661242,
+    "lat": 40.757742,
+    "lng": -73.863489,
     "source_url": "https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/",
-    "geocoded_address": "Northern Boulevard, East Elmhurst, Queens, Queens County, New York, 11369, United States"
+    "geocoded_address": "105-15, QUEENS, 11368",
+    "geocode_method": "nyc_geoclient_v2"
   },
   {
     "name": "La Jornada NYC",
@@ -104,10 +125,11 @@
     "borough": "Queens",
     "zip": "",
     "phone": "(347) 527-1379",
-    "lat": 40.7428959,
-    "lng": -73.9376008,
+    "lat": 40.742922,
+    "lng": -73.937716,
     "source_url": "https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/",
-    "geocoded_address": "47-09, 30th Street, Court Square, Long Island City, Queens, Queens County, New York, 11101, United States"
+    "geocoded_address": "47-09, QUEENS, 11101",
+    "geocode_method": "nyc_geoclient_v2"
   },
   {
     "name": "Medical Center",
@@ -115,10 +137,23 @@
     "borough": "Brooklyn",
     "zip": "",
     "phone": "(718) 963-2254",
-    "lat": 40.7017457,
-    "lng": -73.9430218,
+    "lat": 40.701563,
+    "lng": -73.942934,
     "source_url": "https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/",
-    "geocoded_address": "5, Debevoise Street, Brooklyn, Kings County, New York, 11206, United States"
+    "geocoded_address": "5, BROOKLYN, 11206",
+    "geocode_method": "nyc_geoclient_v2"
+  },
+  {
+    "name": "Vibes Aesthetics",
+    "address": "150-12 14th Avenue Suite 201, Whitestone, NY 11357",
+    "borough": "Queens",
+    "zip": "11357",
+    "phone": "(917) 334-7638",
+    "lat": 40.788959,
+    "lng": -73.813261,
+    "source_url": "https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/",
+    "geocoded_address": "150-12, QUEENS, 11357",
+    "geocode_method": "nyc_geoclient_v2"
   },
   {
     "name": "Hispanoamerica Wholesale",
@@ -126,10 +161,11 @@
     "borough": "Queens",
     "zip": "11372",
     "phone": "(929) 349-1818",
-    "lat": 40.7558874,
-    "lng": -73.8823389,
+    "lat": 40.756807,
+    "lng": -73.873533,
     "source_url": "https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/",
-    "geocoded_address": "Northern Boulevard, Jackson Heights, Queens, Queens County, New York, 11372, United States"
+    "geocoded_address": "94-28, QUEENS, 11372",
+    "geocode_method": "nyc_geoclient_v2"
   },
   {
     "name": "Hispanoamerica",
@@ -137,10 +173,11 @@
     "borough": "Queens",
     "zip": "11373",
     "phone": "(718) 806-1137",
-    "lat": 40.7561255,
-    "lng": -73.8800926,
+    "lat": 40.756858,
+    "lng": -73.872963,
     "source_url": "https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/",
-    "geocoded_address": "Northern Boulevard, Jackson Heights, Queens, Queens County, New York, 11372, United States"
+    "geocoded_address": "95-02, QUEENS, 11372",
+    "geocode_method": "nyc_geoclient_v2"
   },
   {
     "name": "Puerto Plata Queens",
@@ -148,10 +185,35 @@
     "borough": "Queens",
     "zip": "11421",
     "phone": "(718) 296-1717",
-    "lat": 40.685445,
-    "lng": -73.8644955,
+    "lat": 40.685823,
+    "lng": -73.864981,
     "source_url": "https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/",
-    "geocoded_address": "75-16, Rockaway Boulevard, Woodhaven, Queens, Queens County, New York, 11421, United States"
+    "geocoded_address": "75-16, QUEENS, 11421",
+    "geocode_method": "nyc_geoclient_v2"
+  },
+  {
+    "name": "La Victoria Foundation",
+    "address": "37-53 90th St ste.13B, Jackson Heights, NY 11372",
+    "borough": "Queens",
+    "zip": "11372",
+    "phone": "(347) 985-4079",
+    "lat": 40.74943,
+    "lng": -73.876658,
+    "source_url": "https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/",
+    "geocoded_address": "37-53, QUEENS, 11372",
+    "geocode_method": "nyc_geoclient_v2"
+  },
+  {
+    "name": "Assemblywoman Catalina Cruz",
+    "address": "41-40 Junction Blvd Corona, NY 11368",
+    "borough": "Queens",
+    "zip": "11368",
+    "phone": "(718) 458-5367",
+    "lat": 40.746794,
+    "lng": -73.868391,
+    "source_url": "https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/",
+    "geocoded_address": "41-40, QUEENS, 11368",
+    "geocode_method": "nyc_geoclient_v2"
   },
   {
     "name": "Community Center Services Organization (CCSO)",
@@ -159,9 +221,10 @@
     "borough": "Queens",
     "zip": "11373",
     "phone": "(332) 228-8525",
-    "lat": 40.7387921,
-    "lng": -73.878779,
+    "lat": 40.742411,
+    "lng": -73.871146,
     "source_url": "https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/",
-    "geocoded_address": "Corona Avenue, Elmhurst, Queens, Queens County, New York, 11373, United States"
+    "geocoded_address": "93-15, QUEENS, 11373",
+    "geocode_method": "nyc_geoclient_v2"
   }
 ]
