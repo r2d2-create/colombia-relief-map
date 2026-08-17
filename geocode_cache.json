@@ -1,1 +1,135 @@
-{}
+{
+  "geoclient-v1:queens:91-31 queens boulevard elmhurst": {
+    "lat": 40.733324,
+    "lng": -73.869796,
+    "zip": "11373",
+    "geocoded_address": "91-31, QUEENS, NY 11373",
+    "geocode_method": "nyc_geoclient_v2"
+  },
+  "geoclient-v1:queens:85-09 northern boulevard jackson heights": {
+    "lat": 40.755897,
+    "lng": -73.882241,
+    "zip": "11372",
+    "geocoded_address": "85-09, QUEENS, NY 11372",
+    "geocode_method": "nyc_geoclient_v2"
+  },
+  "geoclient-v1:queens:63-10 broadway woodside": {
+    "lat": 40.749934,
+    "lng": -73.899092,
+    "zip": "11377",
+    "geocoded_address": "63-10, QUEENS, NY 11377",
+    "geocode_method": "nyc_geoclient_v2"
+  },
+  "geoclient-v1:bronx:2425 eastchester road bronx": {
+    "lat": 40.861497,
+    "lng": -73.843288,
+    "zip": "10469",
+    "geocoded_address": "2425, BRONX, NY 10469",
+    "geocode_method": "nyc_geoclient_v2"
+  },
+  "geoclient-v1:queens:103-29 101st street ozone park": {
+    "lat": 40.682728,
+    "lng": -73.840236,
+    "zip": "11417",
+    "geocoded_address": "103-29, QUEENS, NY 11417",
+    "geocode_method": "nyc_geoclient_v2"
+  },
+  "geoclient-v1:queens:92-15 northern boulevard east elmhurst": {
+    "lat": 40.756571,
+    "lng": -73.875836,
+    "zip": "11372",
+    "geocoded_address": "92-15, QUEENS, NY 11372",
+    "geocode_method": "nyc_geoclient_v2"
+  },
+  "geoclient-v1:queens:83-03 northern boulevard jackson heights": {
+    "lat": 40.755682,
+    "lng": -73.884288,
+    "zip": "11372",
+    "geocoded_address": "83-03, QUEENS, NY 11372",
+    "geocode_method": "nyc_geoclient_v2"
+  },
+  "geoclient-v1:queens:79-11 northern boulevard jackson heights": {
+    "lat": 40.755296,
+    "lng": -73.887952,
+    "zip": "11372",
+    "geocoded_address": "79-11, QUEENS, NY 11372",
+    "geocode_method": "nyc_geoclient_v2"
+  },
+  "geoclient-v1:queens:84-17 northern boulevard jackson heights": {
+    "lat": 40.755791,
+    "lng": -73.883262,
+    "zip": "11372",
+    "geocoded_address": "84-17, QUEENS, NY 11372",
+    "geocode_method": "nyc_geoclient_v2"
+  },
+  "geoclient-v1:queens:105-15 northern boulevard east elmhurst": {
+    "lat": 40.757742,
+    "lng": -73.863489,
+    "zip": "11368",
+    "geocoded_address": "105-15, QUEENS, NY 11368",
+    "geocode_method": "nyc_geoclient_v2"
+  },
+  "geoclient-v1:queens:47-09 30th street long island city": {
+    "lat": 40.742922,
+    "lng": -73.937716,
+    "zip": "11101",
+    "geocoded_address": "47-09, QUEENS, NY 11101",
+    "geocode_method": "nyc_geoclient_v2"
+  },
+  "geoclient-v1:brooklyn:5 debevoise street brooklyn": {
+    "lat": 40.701563,
+    "lng": -73.942934,
+    "zip": "11206",
+    "geocoded_address": "5, BROOKLYN, NY 11206",
+    "geocode_method": "nyc_geoclient_v2"
+  },
+  "geoclient-v1:queens:150-12 14th avenue whitestone ny 11357": {
+    "lat": 40.788959,
+    "lng": -73.813261,
+    "zip": "11357",
+    "geocoded_address": "150-12, QUEENS, NY 11357",
+    "geocode_method": "nyc_geoclient_v2"
+  },
+  "geoclient-v1:queens:94-28 northern boulevard jackson heights ny 11372": {
+    "lat": 40.756807,
+    "lng": -73.873533,
+    "zip": "11372",
+    "geocoded_address": "94-28, QUEENS, NY 11372",
+    "geocode_method": "nyc_geoclient_v2"
+  },
+  "geoclient-v1:queens:95-02 northern boulevard jackson heights ny 11373": {
+    "lat": 40.756858,
+    "lng": -73.872963,
+    "zip": "11372",
+    "geocoded_address": "95-02, QUEENS, NY 11372",
+    "geocode_method": "nyc_geoclient_v2"
+  },
+  "geoclient-v1:queens:75-16 rockaway boulevard woodhaven ny 11421": {
+    "lat": 40.685823,
+    "lng": -73.864981,
+    "zip": "11421",
+    "geocoded_address": "75-16, QUEENS, NY 11421",
+    "geocode_method": "nyc_geoclient_v2"
+  },
+  "geoclient-v1:queens:37-53 90th street jackson heights ny 11372": {
+    "lat": 40.74943,
+    "lng": -73.876658,
+    "zip": "11372",
+    "geocoded_address": "37-53, QUEENS, NY 11372",
+    "geocode_method": "nyc_geoclient_v2"
+  },
+  "geoclient-v1:queens:41-40 junction boulevard corona ny 11368": {
+    "lat": 40.746794,
+    "lng": -73.868391,
+    "zip": "11368",
+    "geocoded_address": "41-40, QUEENS, NY 11368",
+    "geocode_method": "nyc_geoclient_v2"
+  },
+  "geoclient-v1:queens:93-15 corona avenue elmhurst ny 11373": {
+    "lat": 40.742411,
+    "lng": -73.871146,
+    "zip": "11373",
+    "geocoded_address": "93-15, QUEENS, NY 11373",
+    "geocode_method": "nyc_geoclient_v2"
+  }
+}
