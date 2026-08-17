@@ -31,8 +31,7 @@ const translations = {
     locationUnsupported: "❌ Location Unsupported",
     instructionsHeading: "Instructions",
     instructions:
-      "Click or tap anywhere on the map to add a red start pin. You can also add pins with the button below, press and hold a pin to drag it, and click or tap a pin to select or delete it. Select a donation site from the map or list to see the location’s details and get directions.",
-    addPin: "Add a start pin",
+      "Click or tap anywhere on the map to add a red start pin. You can add multiple pins, press and hold a pin to drag it, and click or tap a pin to select or delete it. Select a donation site from the map or list to view the location’s details and get directions.",
     loadingSites: "Loading verified donation sites…",
     noSites:
       "No verified donation sites have been found yet. This map will update when the scraper identifies active collection locations.",
@@ -99,8 +98,7 @@ const translations = {
     locationUnsupported: "❌ Ubicación no disponible",
     instructionsHeading: "Instrucciones",
     instructions:
-      "Haz clic o toca cualquier lugar del mapa para agregar un pin rojo de inicio. También puedes agregar pins con el botón de abajo, mantener presionado un pin para arrastrarlo y hacer clic o tocar un pin para seleccionarlo o eliminarlo. Selecciona un lugar de donación en el mapa o la lista para ver los detalles y obtener indicaciones.",
-    addPin: "Agregar un pin de inicio",
+      "Haz clic o toca cualquier lugar del mapa para agregar un pin rojo de inicio. Puedes agregar varios pins, mantener presionado un pin para arrastrarlo y hacer clic o tocar un pin para seleccionarlo o eliminarlo. Selecciona un lugar de donación en el mapa o la lista para ver los detalles y obtener indicaciones.",
     loadingSites: "Cargando lugares de donación verificados…",
     noSites:
       "Aún no se han encontrado lugares de donación verificados. Este mapa se actualizará cuando el recopilador identifique lugares de recolección activos.",
@@ -281,8 +279,7 @@ function showSidebarView(view) {
   document.getElementById("site-detail-panel").hidden = view !== "detail";
   document.getElementById("directions-panel").hidden = view !== "directions";
 
-  const sidebar = document.getElementById("sidebar");
-  sidebar.scrollTo({
+  document.getElementById("sidebar").scrollTo({
     top: 0,
     behavior: "smooth"
   });
@@ -483,21 +480,10 @@ function addStartPoint(latlng, label = "") {
   return marker;
 }
 
-function addPinAtMapCenter() {
-  const marker = addStartPoint(map.getCenter());
-
-  map.flyTo(marker.getLatLng(), Math.max(map.getZoom(), 14), {
-    duration: 0.45
-  });
-
-  marker.openPopup();
-}
-
 function selectRouteDestination(site) {
   selectedDestination = site;
   renderSiteDetail(site);
   populateDirectionsDestination();
-  updateVisibleRouteButtons();
 
   if (currentSidebarView === "directions" && selectedStartPoint) {
     requestRoute();
@@ -952,12 +938,6 @@ function displaySites(sites) {
   });
 }
 
-function updateVisibleRouteButtons() {
-  document.querySelectorAll(".route-btn").forEach((button) => {
-    button.textContent = text("routeButton");
-  });
-}
-
 function populateZipFilter(sites) {
   const zipFilter = document.getElementById("zipFilter");
   const selectedZip = zipFilter.value || "all";
@@ -1182,7 +1162,6 @@ function applyLanguage() {
     text("instructionsHeading");
   document.getElementById("instructions-text").textContent =
     text("instructions");
-  document.getElementById("add-pin-btn").textContent = text("addPin");
   document.getElementById("back-to-list-btn").textContent =
     text("detailsBack");
   document.getElementById("back-from-directions-btn").textContent =
@@ -1195,16 +1174,10 @@ function applyLanguage() {
     text("destination");
   document.getElementById("travel-mode-label").textContent =
     text("travelMode");
-  document.getElementById("add-pin-from-directions-btn").textContent =
-    text("addPin");
 
-  const languageToggle = document.getElementById("language-toggle");
+  const languageToggle = document.getElementById("cyber-toggle");
 
-  languageToggle.setAttribute(
-    "aria-checked",
-    currentLanguage === "es" ? "true" : "false"
-  );
-
+  languageToggle.checked = currentLanguage === "es";
   languageToggle.setAttribute(
     "aria-label",
     currentLanguage === "en"
@@ -1272,7 +1245,10 @@ function applyLanguage() {
 }
 
 function toggleLanguage() {
-  currentLanguage = currentLanguage === "en" ? "es" : "en";
+  currentLanguage = document.getElementById("cyber-toggle").checked
+    ? "es"
+    : "en";
+
   applyLanguage();
 }
 
@@ -1383,16 +1359,8 @@ function initMap() {
   document.getElementById("zipFilter").addEventListener("change", filterMarkers);
 
   document
-    .getElementById("language-toggle")
-    .addEventListener("click", toggleLanguage);
-
-  document
-    .getElementById("add-pin-btn")
-    .addEventListener("click", addPinAtMapCenter);
-
-  document
-    .getElementById("add-pin-from-directions-btn")
-    .addEventListener("click", addPinAtMapCenter);
+    .getElementById("cyber-toggle")
+    .addEventListener("change", toggleLanguage);
 
   document.getElementById("back-to-list-btn").addEventListener("click", () => {
     showSidebarView("home");
