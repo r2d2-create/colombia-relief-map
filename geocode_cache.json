@@ -70,5 +70,85 @@
   "42 woodcleft avenue freeport ny 11520 usa": null,
   "37 53 90th st ste 13b jackson heights ny 11372 usa": null,
   "41 40 junction blvd corona ny 11368 usa": null,
-  "93 15 corona ave ground floor elmhurst ny 11373 usa": null
+  "93 15 corona ave ground floor elmhurst ny 11373 usa": null,
+  "v2:91-31 queens boulevard elmhurst queens ny usa": {
+    "lat": 40.733679,
+    "lng": -73.869388,
+    "geocoded_address": "91-31, Queens Boulevard, Elmhurst, Queens, Queens County, New York, 11373, United States"
+  },
+  "v2:85-09 northern boulevard jackson heights queens ny usa": {
+    "lat": 40.7558874,
+    "lng": -73.8823389,
+    "geocoded_address": "Northern Boulevard, Jackson Heights, Queens, Queens County, New York, 11372, United States"
+  },
+  "v2:63-10 broadway woodside queens ny usa": {
+    "lat": 40.7497051,
+    "lng": -73.8988954,
+    "geocoded_address": "Praga Tapas Bar, 63-10, Broadway, Woodside, Queens, Queens County, New York, 11377, United States"
+  },
+  "v2:2425 eastchester road bronx bronx ny usa": {
+    "lat": 40.8617738,
+    "lng": -73.843726,
+    "geocoded_address": "2425, Eastchester Road, The Bronx, Bronx County, New York, 10469, United States"
+  },
+  "v2:103-29 101 street ozone park queens ny usa": null,
+  "v2:92-15 northern boulevard east elmhurst queens ny usa": {
+    "lat": 40.7571813,
+    "lng": -73.8700222,
+    "geocoded_address": "Northern Boulevard, East Elmhurst, Queens, Queens County, New York, 11369, United States"
+  },
+  "v2:83-03 northern boulevard jackson heights queens ny usa": {
+    "lat": 40.755897,
+    "lng": -73.8842603,
+    "geocoded_address": "83-03, Northern Boulevard, Jackson Heights, Queens, Queens County, New York, 11370, United States"
+  },
+  "v2:79-11 northern boulevard jackson heights queens ny usa": {
+    "lat": 40.7554714,
+    "lng": -73.8876611,
+    "geocoded_address": "79-11, Northern Boulevard, Jackson Heights, Queens, Queens County, New York, 11370, United States"
+  },
+  "v2:84-17 northern boulevard jackson heights queens ny usa": {
+    "lat": 40.7560639,
+    "lng": -73.8828926,
+    "geocoded_address": "84-17, Northern Boulevard, Jackson Heights, Queens, Queens County, New York, 11370, United States"
+  },
+  "v2:105-15 northern boulevard east elmhurst queens ny usa": {
+    "lat": 40.7571813,
+    "lng": -73.8700222,
+    "geocoded_address": "Northern Boulevard, East Elmhurst, Queens, Queens County, New York, 11369, United States"
+  },
+  "v2:47-09 30th street long island city queens ny usa": {
+    "lat": 40.7428959,
+    "lng": -73.9376008,
+    "geocoded_address": "47-09, 30th Street, Court Square, Long Island City, Queens, Queens County, New York, 11101, United States"
+  },
+  "v2:5 debevoise street brooklyn brooklyn ny usa": {
+    "lat": 40.7017457,
+    "lng": -73.9430218,
+    "geocoded_address": "5, Debevoise Street, Brooklyn, Kings County, New York, 11206, United States"
+  },
+  "v2:150-12 14th avenue whitestone ny 11357 usa": null,
+  "v2:94-28 northern boulevard jackson heights ny 11372 usa": {
+    "lat": 40.7556453,
+    "lng": -73.88462,
+    "geocoded_address": "Northern Boulevard, Jackson Heights, Queens, Queens County, New York, 11372, United States"
+  },
+  "v2:95-02 northern boulevard jackson heights ny 11373 usa": {
+    "lat": 40.7561255,
+    "lng": -73.8800926,
+    "geocoded_address": "Northern Boulevard, Jackson Heights, Queens, Queens County, New York, 11372, United States"
+  },
+  "v2:75-16 rockaway boulevard woodhaven ny 11421 usa": {
+    "lat": 40.685445,
+    "lng": -73.8644955,
+    "geocoded_address": "75-16, Rockaway Boulevard, Woodhaven, Queens, Queens County, New York, 11421, United States"
+  },
+  "v2:42 woodcleft avenue freeport ny 11520 usa": null,
+  "v2:37-53 90th street jackson heights ny 11372 usa": null,
+  "v2:41-40 junction boulevard corona ny 11368 usa": null,
+  "v2:93-15 corona avenue elmhurst ny 11373 usa": {
+    "lat": 40.7420265,
+    "lng": -73.8742927,
+    "geocoded_address": "Corona Avenue, Elmhurst, Queens, Queens County, New York, 11373, United States"
+  }
 }

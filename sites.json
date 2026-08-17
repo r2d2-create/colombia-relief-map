@@ -1,5 +1,16 @@
 [
   {
+    "name": "Elmhurst Balance and Physical Therapy",
+    "address": "91-31 Queens Blvd Suite 314, Elmhurst",
+    "borough": "Queens",
+    "zip": "",
+    "phone": "(718) 205-3435",
+    "lat": 40.733679,
+    "lng": -73.869388,
+    "source_url": "https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/",
+    "geocoded_address": "91-31, Queens Boulevard, Elmhurst, Queens, Queens County, New York, 11373, United States"
+  },
+  {
     "name": "Kabu Lounge",
     "address": "85-09 Northern Blvd, Jackson Heights",
     "borough": "Queens",
@@ -38,8 +49,8 @@
     "borough": "Queens",
     "zip": "",
     "phone": "(718) 533-2002",
-    "lat": 40.7575888,
-    "lng": -73.8661242,
+    "lat": 40.7571813,
+    "lng": -73.8700222,
     "source_url": "https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/",
     "geocoded_address": "Northern Boulevard, East Elmhurst, Queens, Queens County, New York, 11369, United States"
   },
@@ -60,10 +71,10 @@
     "borough": "Queens",
     "zip": "",
     "phone": "(929) 799-7729",
-    "lat": 40.755474,
-    "lng": -73.88767,
+    "lat": 40.7554714,
+    "lng": -73.8876611,
     "source_url": "https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/",
-    "geocoded_address": "Los Coritos, 79-11, Northern Boulevard, Jackson Heights, Queens, Queens County, New York, 11372, United States"
+    "geocoded_address": "79-11, Northern Boulevard, Jackson Heights, Queens, Queens County, New York, 11370, United States"
   },
   {
     "name": "Lechoneria",
@@ -115,8 +126,8 @@
     "borough": "Queens",
     "zip": "11372",
     "phone": "(929) 349-1818",
-    "lat": 40.7561255,
-    "lng": -73.8800926,
+    "lat": 40.7556453,
+    "lng": -73.88462,
     "source_url": "https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/",
     "geocoded_address": "Northern Boulevard, Jackson Heights, Queens, Queens County, New York, 11372, United States"
   },
@@ -141,5 +152,16 @@
     "lng": -73.8644955,
     "source_url": "https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/",
     "geocoded_address": "75-16, Rockaway Boulevard, Woodhaven, Queens, Queens County, New York, 11421, United States"
+  },
+  {
+    "name": "Community Center Services Organization (CCSO)",
+    "address": "93-15 Corona Ave. Ground Floor, Elmhurst, NY 11373",
+    "borough": "Queens",
+    "zip": "11373",
+    "phone": "(332) 228-8525",
+    "lat": 40.7420265,
+    "lng": -73.8742927,
+    "source_url": "https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/",
+    "geocoded_address": "Corona Avenue, Elmhurst, Queens, Queens County, New York, 11373, United States"
   }
 ]
