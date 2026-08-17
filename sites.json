@@ -16,8 +16,8 @@
     "borough": "Queens",
     "zip": "",
     "phone": "(718) 429-0321",
-    "lat": 40.7558874,
-    "lng": -73.8823389,
+    "lat": 40.7561255,
+    "lng": -73.8800926,
     "source_url": "https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/",
     "geocoded_address": "Northern Boulevard, Jackson Heights, Queens, Queens County, New York, 11372, United States"
   },
@@ -93,8 +93,8 @@
     "borough": "Queens",
     "zip": "",
     "phone": "(917) 724-9279",
-    "lat": 40.7571813,
-    "lng": -73.8700222,
+    "lat": 40.7575888,
+    "lng": -73.8661242,
     "source_url": "https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/",
     "geocoded_address": "Northern Boulevard, East Elmhurst, Queens, Queens County, New York, 11369, United States"
   },
@@ -126,8 +126,8 @@
     "borough": "Queens",
     "zip": "11372",
     "phone": "(929) 349-1818",
-    "lat": 40.7556453,
-    "lng": -73.88462,
+    "lat": 40.7558874,
+    "lng": -73.8823389,
     "source_url": "https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/",
     "geocoded_address": "Northern Boulevard, Jackson Heights, Queens, Queens County, New York, 11372, United States"
   },
@@ -159,8 +159,8 @@
     "borough": "Queens",
     "zip": "11373",
     "phone": "(332) 228-8525",
-    "lat": 40.7420265,
-    "lng": -73.8742927,
+    "lat": 40.7387921,
+    "lng": -73.878779,
     "source_url": "https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/",
     "geocoded_address": "Corona Avenue, Elmhurst, Queens, Queens County, New York, 11373, United States"
   }
