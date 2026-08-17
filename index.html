@@ -13,10 +13,9 @@
     crossorigin=""
   />
 
-  <!-- Your CSS -->
   <link rel="stylesheet" href="style.css" />
 
-  <!-- Leaflet must load BEFORE app.js -->
+  <!-- Leaflet must load before app.js -->
   <script
     src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
@@ -48,6 +47,26 @@
       </button>
 
       <p id="timestamp" aria-live="polite"></p>
+    </section>
+
+    <section id="directions-panel" aria-live="polite">
+      <h2>Route planner</h2>
+
+      <p id="route-status">
+        Click or tap the map to set your start point, then select a donation
+        site.
+      </p>
+
+      <label for="route-mode">Travel mode</label>
+
+      <select id="route-mode">
+        <option value="transit">Train / bus / transit</option>
+        <option value="drive">Car</option>
+        <option value="walk">Walk</option>
+        <option value="bicycle">Bike</option>
+      </select>
+
+      <ol id="route-instructions"></ol>
     </section>
 
     <section id="site-list" aria-live="polite">
