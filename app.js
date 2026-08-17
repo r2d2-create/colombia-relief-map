@@ -3,6 +3,15 @@ let markerGroup;
 let userLocationMarker;
 let allSites = [];
 
+let selectedStartMarker;
+let selectedStartPoint = null;
+let selectedDestination = null;
+let routeLayer;
+let routeAbortController;
+
+const ROUTING_PROXY_URL =
+  "https://colombia-relief-routing.end259.workers.dev/route";
+
 function getBoroughColor(borough) {
   switch (borough) {
     case "Queens":
@@ -54,8 +63,8 @@ function createUserLocationMarker() {
           background-color: #007bff;
           width: 18px;
           height: 18px;
-          border-radius: 50%;
           border: 3px solid white;
+          border-radius: 50%;
           box-shadow: 0 0 9px #007bff;
         "
       ></div>
@@ -91,11 +100,276 @@ function validSite(site) {
   );
 }
 
+function addBoroughLegend() {
+  const L = window.L;
+
+  const legend = L.control({
+    position: "bottomright"
+  });
+
+  legend.onAdd = function () {
+    const container = L.DomUtil.create(
+      "div",
+      "borough-legend leaflet-control"
+    );
+
+    container.innerHTML = `
+      <div class="borough-legend-title">Donation-site borough</div>
+
+      <div class="borough-legend-item">
+        <span class="borough-legend-dot" style="background: orange;"></span>
+        Queens
+      </div>
+
+      <div class="borough-legend-item">
+        <span class="borough-legend-dot" style="background: purple;"></span>
+        Brooklyn
+      </div>
+
+      <div class="borough-legend-item">
+        <span class="borough-legend-dot" style="background: red;"></span>
+        Bronx
+      </div>
+
+      <div class="borough-legend-item">
+        <span class="borough-legend-dot" style="background: blue;"></span>
+        Manhattan
+      </div>
+
+      <div class="borough-legend-item">
+        <span class="borough-legend-dot" style="background: green;"></span>
+        Staten Island / other
+      </div>
+
+      <div class="borough-legend-item">
+        <span class="borough-legend-dot user-location-dot"></span>
+        Your start point
+      </div>
+    `;
+
+    L.DomEvent.disableClickPropagation(container);
+    L.DomEvent.disableScrollPropagation(container);
+
+    return container;
+  };
+
+  legend.addTo(map);
+}
+
+function setStartPoint(latlng, label = "Your selected start point") {
+  const L = window.L;
+
+  selectedStartPoint = {
+    lat: latlng.lat,
+    lng: latlng.lng
+  };
+
+  if (selectedStartMarker) {
+    map.removeLayer(selectedStartMarker);
+  }
+
+  selectedStartMarker = L.marker(latlng, {
+    icon: createUserLocationMarker(),
+    draggable: true,
+    title: label
+  })
+    .addTo(map)
+    .bindPopup(
+      `<strong>${escapeHtml(label)}</strong><br>Select a donation site for directions.`
+    )
+    .openPopup();
+
+  selectedStartMarker.on("dragend", (event) => {
+    const updatedPoint = event.target.getLatLng();
+
+    selectedStartPoint = {
+      lat: updatedPoint.lat,
+      lng: updatedPoint.lng
+    };
+
+    updateRouteStatus();
+
+    if (selectedDestination) {
+      requestRoute();
+    }
+  });
+
+  updateRouteStatus();
+
+  if (selectedDestination) {
+    requestRoute();
+  }
+}
+
+function selectRouteDestination(site) {
+  selectedDestination = site;
+
+  updateRouteStatus();
+
+  if (selectedStartPoint) {
+    requestRoute();
+  }
+}
+
+function updateRouteStatus() {
+  const status = document.getElementById("route-status");
+
+  if (!status) {
+    return;
+  }
+
+  if (!selectedStartPoint && !selectedDestination) {
+    status.textContent =
+      "Click or tap the map to set your start point, then select a donation site.";
+    return;
+  }
+
+  if (!selectedStartPoint) {
+    status.textContent =
+      "Now click or tap the map to set your start point.";
+    return;
+  }
+
+  if (!selectedDestination) {
+    status.textContent =
+      "Now select a donation site from the map or list.";
+    return;
+  }
+
+  status.textContent = `Route to ${selectedDestination.name}: calculating…`;
+}
+
+async function requestRoute() {
+  if (!selectedStartPoint || !selectedDestination) {
+    return;
+  }
+
+  const routeModeSelect = document.getElementById("route-mode");
+  const status = document.getElementById("route-status");
+  const instructions = document.getElementById("route-instructions");
+
+  if (!routeModeSelect || !status || !instructions) {
+    console.error("Route panel HTML elements are missing.");
+    return;
+  }
+
+  const mode = routeModeSelect.value;
+
+  if (routeAbortController) {
+    routeAbortController.abort();
+  }
+
+  routeAbortController = new AbortController();
+
+  status.textContent = `Calculating ${mode} route…`;
+  instructions.innerHTML = "";
+
+  const parameters = new URLSearchParams({
+    startLat: selectedStartPoint.lat,
+    startLng: selectedStartPoint.lng,
+    endLat: Number(selectedDestination.lat),
+    endLng: Number(selectedDestination.lng),
+    mode
+  });
+
+  try {
+    const response = await fetch(
+      `${ROUTING_PROXY_URL}?${parameters.toString()}`,
+      {
+        signal: routeAbortController.signal
+      }
+    );
+
+    const routeData = await response.json();
+
+    if (!response.ok) {
+      throw new Error(routeData.error || "Route request failed.");
+    }
+
+    drawRoute(routeData);
+  } catch (error) {
+    if (error.name === "AbortError") {
+      return;
+    }
+
+    console.error("Routing error:", error);
+
+    status.textContent =
+      "Could not calculate this route. Try another travel mode.";
+  }
+}
+
+function drawRoute(routeData) {
+  const L = window.L;
+  const status = document.getElementById("route-status");
+  const instructions = document.getElementById("route-instructions");
+
+  if (routeLayer) {
+    map.removeLayer(routeLayer);
+  }
+
+  const routeFeature = routeData.features?.[0];
+
+  if (!routeFeature) {
+    status.textContent = "No route found for this travel mode.";
+    instructions.innerHTML = "";
+    return;
+  }
+
+  routeLayer = L.geoJSON(routeFeature, {
+    style: {
+      color: "#0b5cab",
+      weight: 6,
+      opacity: 0.85
+    }
+  }).addTo(map);
+
+  map.fitBounds(routeLayer.getBounds(), {
+    padding: [40, 40],
+    maxZoom: 14
+  });
+
+  const properties = routeFeature.properties || {};
+  const distanceKm = Number(properties.distance || 0) / 1000;
+  const minutes = Math.max(
+    1,
+    Math.round(Number(properties.time || 0) / 60)
+  );
+
+  status.textContent =
+    `${selectedDestination.name}: ${distanceKm.toFixed(1)} km · about ${minutes} min`;
+
+  const steps = (properties.legs || [])
+    .flatMap((leg) => leg.steps || []);
+
+  if (!steps.length) {
+    instructions.innerHTML = `
+      <li>
+        Route shown on the map. Step-by-step directions are unavailable for this route.
+      </li>
+    `;
+    return;
+  }
+
+  instructions.innerHTML = steps
+    .slice(0, 15)
+    .map((step) => {
+      const instruction =
+        step.instruction?.text ||
+        step.instruction ||
+        "Continue on the route.";
+
+      return `<li>${escapeHtml(instruction)}</li>`;
+    })
+    .join("");
+}
+
 function initMap() {
   const L = window.L;
   const mapElement = document.getElementById("map");
   const locateButton = document.getElementById("locate-btn");
   const zipFilter = document.getElementById("zipFilter");
+  const routeModeSelect = document.getElementById("route-mode");
 
   if (!L) {
     console.error(
@@ -124,8 +398,22 @@ function initMap() {
 
   markerGroup = L.layerGroup().addTo(map);
 
+  addBoroughLegend();
+
+  map.on("click", (event) => {
+    setStartPoint(event.latlng);
+  });
+
   locateButton.addEventListener("click", locateUser);
   zipFilter.addEventListener("change", filterMarkers);
+
+  if (routeModeSelect) {
+    routeModeSelect.addEventListener("change", () => {
+      if (selectedStartPoint && selectedDestination) {
+        requestRoute();
+      }
+    });
+  }
 
   loadSites();
 }
@@ -211,11 +499,6 @@ function displaySites(sites) {
     const longitude = Number(site.lng);
     const pinColor = getBoroughColor(site.borough);
 
-    const routingUrl =
-      "https://www.google.com/maps/dir/?api=1" +
-      `&destination=${encodeURIComponent(address)}` +
-      "&travelmode=transit";
-
     const marker = L.marker([latitude, longitude], {
       icon: createCustomMarker(pinColor),
       title: name
@@ -228,15 +511,14 @@ function displaySites(sites) {
       </span><br>
       ${escapeHtml(address)}<br>
       <a href="tel:${encodeURIComponent(phone)}">${escapeHtml(phone)}</a><br>
-      <a
-        href="${routingUrl}"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="route-btn"
-      >
-        Get train / bus route
-      </a>
+      <span style="color: #0b5cab; font-size: 12px;">
+        Click this marker to select it for routing.
+      </span>
     `);
+
+    marker.on("click", () => {
+      selectRouteDestination(site);
+    });
 
     markerGroup.addLayer(marker);
 
@@ -249,26 +531,18 @@ function displaySites(sites) {
       <strong>${escapeHtml(name)}</strong>
       <p class="site-address">${escapeHtml(address)}</p>
       <p class="site-phone">${escapeHtml(phone)}</p>
-      <a
-        href="${routingUrl}"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="route-btn"
-      >
-        Route via transit
-      </a>
+      <button type="button" class="route-btn">
+        Choose for route
+      </button>
     `;
 
-    const focusSite = (event) => {
-      if (event.target.closest("a")) {
-        return;
-      }
-
+    const focusSite = () => {
       map.flyTo([latitude, longitude], 15, {
         duration: 0.75
       });
 
       marker.openPopup();
+      selectRouteDestination(site);
     };
 
     card.addEventListener("click", focusSite);
@@ -276,7 +550,7 @@ function displaySites(sites) {
     card.addEventListener("keydown", (event) => {
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
-        focusSite(event);
+        focusSite();
       }
     });
 
@@ -324,6 +598,8 @@ function locateUser() {
       .addTo(map)
       .bindPopup("<strong>You are here</strong>")
       .openPopup();
+
+    setStartPoint(event.latlng, "Your current location");
 
     map.flyTo(event.latlng, 14, {
       duration: 0.75
