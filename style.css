@@ -222,3 +222,44 @@ button:disabled {
     height: 55%;
   }
 }
+
+.borough-legend {
+  min-width: 166px;
+  padding: 10px 12px;
+  border: 1px solid rgba(22, 46, 72, 0.18);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.94);
+  color: #263745;
+  box-shadow: 0 2px 9px rgba(0, 0, 0, 0.18);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.borough-legend-title {
+  margin-bottom: 7px;
+  color: #063b70;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.borough-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 4px 0;
+}
+
+.borough-legend-dot {
+  display: inline-block;
+  flex: 0 0 13px;
+  width: 13px;
+  height: 13px;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.45);
+}
+
+.user-location-dot {
+  background: #007bff;
+  border-width: 3px;
+}
