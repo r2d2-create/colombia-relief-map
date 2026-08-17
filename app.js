@@ -3,14 +3,203 @@ let markerGroup;
 let userLocationMarker;
 let allSites = [];
 
-let selectedStartMarker;
+let startPinCounter = 0;
+let selectedStartMarker = null;
 let selectedStartPoint = null;
 let selectedDestination = null;
-let routeLayer;
-let routeAbortController;
+let routeLayer = null;
+let routeAbortController = null;
+let currentLanguage = "en";
+let currentSidebarView = "home";
+
+const startMarkers = new Map();
 
 const ROUTING_PROXY_URL =
   "https://colombia-relief-routing.end259.workers.dev/route";
+
+const translations = {
+  en: {
+    documentTitle: "Colombia Relief Donation Map",
+    title: "Colombia Relief Map",
+    subtitle:
+      "Find current NYC-area donation locations for people affected by the Colombia earthquake.",
+    zipLabel: "Filter donation sites by ZIP code",
+    allZipCodes: "All ZIP codes",
+    locate: "📍 Use My Current Location",
+    findingLocation: "🌀 Finding you...",
+    locationFound: "📍 Location Found",
+    locationUnsupported: "❌ Location Unsupported",
+    instructionsHeading: "Instructions",
+    instructions:
+      "Click or tap anywhere on the map to add a red start pin. You can also add pins with the button below, press and hold a pin to drag it, and click or tap a pin to select or delete it. Select a donation site from the map or list to see the location’s details and get directions.",
+    addPin: "Add a start pin",
+    loadingSites: "Loading verified donation sites…",
+    noSites:
+      "No verified donation sites have been found yet. This map will update when the scraper identifies active collection locations.",
+    routeButton: "Directions",
+    selectedPin: "Selected start pin",
+    selectPin: "Select this start pin",
+    removePin: "Delete pin",
+    deletePinTitle: "Delete pin?",
+    deletePinMessage: "Do you want to delete this start pin?",
+    cancel: "Cancel",
+    confirmDelete: "Delete pin",
+    pinInstructions:
+      "Press and hold this pin, then drag it to move it. Select it to use it for directions.",
+    yourLocation: "Your current location",
+    youAreHere: "You are here",
+    detailsBack: "← Back to donation sites",
+    directionsBack: "← Back to donation site",
+    directionsHeading: "Directions",
+    startPoint: "Starting point",
+    selectStartPin: "Select a start pin",
+    destination: "Destination",
+    reverseDirections: "Reverse directions",
+    travelMode: "Travel mode",
+    transit: "Transit",
+    drive: "Car",
+    walk: "Walk",
+    bicycle: "Bike",
+    selectStartAndMode: "Select a start pin and travel mode to get directions.",
+    selectedStartMessage: "Start pin selected. Choose a travel mode for directions.",
+    calculatingRoute: "Calculating route",
+    routeError: "Could not calculate this route. Try another travel mode.",
+    noRoute: "No route found for this travel mode.",
+    routeShown:
+      "Route shown on the map. Step-by-step directions are unavailable for this route.",
+    call: "Call",
+    sendToPhone: "Send to phone",
+    callUnavailable: "Phone unavailable",
+    phoneCopied: "Directions link copied. Paste it into a text message or email.",
+    shareError: "Could not share directions. The directions link was copied instead.",
+    lastChecked: "Last checked",
+    locationNotSupported: "This browser does not support location services.",
+    locationDeniedAlert:
+      "Could not access your location. Check browser privacy permissions and try again.",
+    mapLabel: "Interactive donation site map",
+    siteListLabel: "Donation site locations",
+    filterLabel: "Donation site filters",
+    boroughLegend: "Donation-site borough",
+    startPointLegend: "Your start pin",
+    phone: "Phone",
+    address: "Address",
+    selectedForDirections: "Selected donation site"
+  },
+
+  es: {
+    documentTitle: "Mapa de Donaciones para Colombia",
+    title: "Mapa de Ayuda para Colombia",
+    subtitle:
+      "Encuentra lugares actuales de donación en el área de Nueva York para las personas afectadas por el terremoto en Colombia.",
+    zipLabel: "Filtrar lugares de donación por código postal",
+    allZipCodes: "Todos los códigos postales",
+    locate: "📍 Usar mi ubicación actual",
+    findingLocation: "🌀 Buscando tu ubicación...",
+    locationFound: "📍 Ubicación encontrada",
+    locationUnsupported: "❌ Ubicación no disponible",
+    instructionsHeading: "Instrucciones",
+    instructions:
+      "Haz clic o toca cualquier lugar del mapa para agregar un pin rojo de inicio. También puedes agregar pins con el botón de abajo, mantener presionado un pin para arrastrarlo y hacer clic o tocar un pin para seleccionarlo o eliminarlo. Selecciona un lugar de donación en el mapa o la lista para ver los detalles y obtener indicaciones.",
+    addPin: "Agregar un pin de inicio",
+    loadingSites: "Cargando lugares de donación verificados…",
+    noSites:
+      "Aún no se han encontrado lugares de donación verificados. Este mapa se actualizará cuando el recopilador identifique lugares de recolección activos.",
+    routeButton: "Indicaciones",
+    selectedPin: "Pin de inicio seleccionado",
+    selectPin: "Seleccionar este pin de inicio",
+    removePin: "Eliminar pin",
+    deletePinTitle: "¿Eliminar pin?",
+    deletePinMessage: "¿Quieres eliminar este pin de inicio?",
+    cancel: "Cancelar",
+    confirmDelete: "Eliminar pin",
+    pinInstructions:
+      "Mantén presionado este pin y arrástralo para moverlo. Selecciónalo para usarlo en las indicaciones.",
+    yourLocation: "Tu ubicación actual",
+    youAreHere: "Estás aquí",
+    detailsBack: "← Volver a los lugares de donación",
+    directionsBack: "← Volver al lugar de donación",
+    directionsHeading: "Indicaciones",
+    startPoint: "Punto de partida",
+    selectStartPin: "Selecciona un pin de inicio",
+    destination: "Destino",
+    reverseDirections: "Invertir indicaciones",
+    travelMode: "Modo de viaje",
+    transit: "Transporte público",
+    drive: "Auto",
+    walk: "A pie",
+    bicycle: "Bicicleta",
+    selectStartAndMode:
+      "Selecciona un pin de inicio y un modo de viaje para obtener indicaciones.",
+    selectedStartMessage:
+      "Pin de inicio seleccionado. Elige un modo de viaje para obtener indicaciones.",
+    calculatingRoute: "Calculando ruta",
+    routeError:
+      "No se pudo calcular esta ruta. Prueba otro modo de viaje.",
+    noRoute: "No se encontró una ruta para este modo de viaje.",
+    routeShown:
+      "La ruta se muestra en el mapa. Las indicaciones paso a paso no están disponibles para esta ruta.",
+    call: "Llamar",
+    sendToPhone: "Enviar al teléfono",
+    callUnavailable: "Teléfono no disponible",
+    phoneCopied:
+      "El enlace de indicaciones se copió. Pégalo en un mensaje de texto o correo electrónico.",
+    shareError:
+      "No se pudieron compartir las indicaciones. El enlace se copió en su lugar.",
+    lastChecked: "Última actualización",
+    locationNotSupported:
+      "Este navegador no admite los servicios de ubicación.",
+    locationDeniedAlert:
+      "No se pudo acceder a tu ubicación. Revisa los permisos de privacidad del navegador e inténtalo de nuevo.",
+    mapLabel: "Mapa interactivo de lugares de donación",
+    siteListLabel: "Lugares de donación",
+    filterLabel: "Filtros de lugares de donación",
+    boroughLegend: "Distrito del lugar de donación",
+    startPointLegend: "Tu pin de inicio",
+    phone: "Teléfono",
+    address: "Dirección",
+    selectedForDirections: "Lugar de donación seleccionado"
+  }
+};
+
+function text(key) {
+  return translations[currentLanguage][key];
+}
+
+function safeText(value, fallback = "") {
+  return value === undefined || value === null || value === ""
+    ? fallback
+    : String(value);
+}
+
+function escapeHtml(value) {
+  return safeText(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function formatSiteAddress(site) {
+  const address = safeText(site.address).replace(/\s+/g, " ").trim();
+  const zip = safeText(site.zip).trim();
+
+  if (!zip || new RegExp(`\\b${zip}\\b`).test(address)) {
+    return address;
+  }
+
+  return `${address}, NY ${zip}`;
+}
+
+function validSite(site) {
+  return (
+    site &&
+    safeText(site.name).trim() &&
+    safeText(site.address).trim() &&
+    Number.isFinite(Number(site.lat)) &&
+    Number.isFinite(Number(site.lng))
+  );
+}
 
 function getBoroughColor(borough) {
   switch (borough) {
@@ -30,9 +219,7 @@ function getBoroughColor(borough) {
 }
 
 function createCustomMarker(color) {
-  const L = window.L;
-
-  return L.divIcon({
+  return window.L.divIcon({
     className: "custom-pin",
     html: `
       <div
@@ -52,10 +239,22 @@ function createCustomMarker(color) {
   });
 }
 
-function createUserLocationMarker() {
-  const L = window.L;
+function createStartPointMarker(isSelected = false) {
+  return window.L.divIcon({
+    className: "start-pin-wrapper",
+    html: `
+      <div class="start-pin${isSelected ? " is-selected" : ""}">
+        <span>📍</span>
+      </div>
+    `,
+    iconSize: [42, 52],
+    iconAnchor: [21, 51],
+    popupAnchor: [0, -46]
+  });
+}
 
-  return L.divIcon({
+function createUserLocationMarker() {
+  return window.L.divIcon({
     className: "user-pin",
     html: `
       <div
@@ -75,140 +274,464 @@ function createUserLocationMarker() {
   });
 }
 
-function safeText(value, fallback = "") {
-  return value === undefined || value === null || value === ""
-    ? fallback
-    : String(value);
-}
+function showSidebarView(view) {
+  currentSidebarView = view;
 
-function escapeHtml(value) {
-  return safeText(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
+  document.getElementById("sidebar-home").hidden = view !== "home";
+  document.getElementById("site-detail-panel").hidden = view !== "detail";
+  document.getElementById("directions-panel").hidden = view !== "directions";
 
-function validSite(site) {
-  return (
-    site &&
-    safeText(site.name).trim() &&
-    safeText(site.address).trim() &&
-    Number.isFinite(Number(site.lat)) &&
-    Number.isFinite(Number(site.lng))
-  );
-}
-
-function addBoroughLegend() {
-  const L = window.L;
-
-  const legend = L.control({
-    position: "bottomright"
+  const sidebar = document.getElementById("sidebar");
+  sidebar.scrollTo({
+    top: 0,
+    behavior: "smooth"
   });
-
-  legend.onAdd = function () {
-    const container = L.DomUtil.create(
-      "div",
-      "borough-legend leaflet-control"
-    );
-
-    container.innerHTML = `
-      <div class="borough-legend-title">Donation-site borough</div>
-
-      <div class="borough-legend-item">
-        <span class="borough-legend-dot" style="background: orange;"></span>
-        Queens
-      </div>
-
-      <div class="borough-legend-item">
-        <span class="borough-legend-dot" style="background: purple;"></span>
-        Brooklyn
-      </div>
-
-      <div class="borough-legend-item">
-        <span class="borough-legend-dot" style="background: red;"></span>
-        Bronx
-      </div>
-
-      <div class="borough-legend-item">
-        <span class="borough-legend-dot" style="background: blue;"></span>
-        Manhattan
-      </div>
-
-      <div class="borough-legend-item">
-        <span class="borough-legend-dot" style="background: green;"></span>
-        Staten Island / other
-      </div>
-
-      <div class="borough-legend-item">
-        <span class="borough-legend-dot user-location-dot"></span>
-        Your start point
-      </div>
-    `;
-
-    L.DomEvent.disableClickPropagation(container);
-    L.DomEvent.disableScrollPropagation(container);
-
-    return container;
-  };
-
-  legend.addTo(map);
 }
 
-function setStartPoint(latlng, label = "Your selected start point") {
-  const L = window.L;
+function clearRoute() {
+  if (routeAbortController) {
+    routeAbortController.abort();
+    routeAbortController = null;
+  }
+
+  if (routeLayer) {
+    map.removeLayer(routeLayer);
+    routeLayer = null;
+  }
+
+  const instructions = document.getElementById("route-instructions");
+
+  if (instructions) {
+    instructions.innerHTML = "";
+  }
+}
+
+function setSelectedStartMarker(marker) {
+  if (!marker || !startMarkers.has(marker.options.startPinId)) {
+    return;
+  }
+
+  if (selectedStartMarker && selectedStartMarker !== marker) {
+    selectedStartMarker.setIcon(createStartPointMarker(false));
+  }
+
+  selectedStartMarker = marker;
+
+  const latlng = marker.getLatLng();
 
   selectedStartPoint = {
     lat: latlng.lat,
     lng: latlng.lng
   };
 
-  if (selectedStartMarker) {
-    map.removeLayer(selectedStartMarker);
-  }
+  marker.setIcon(createStartPointMarker(true));
+  marker.setPopupContent(startPointPopupHtml(marker));
+  marker.openPopup();
 
-  selectedStartMarker = L.marker(latlng, {
-    icon: createUserLocationMarker(),
-    draggable: true,
-    title: label
-  })
-    .addTo(map)
-    .bindPopup(
-      `<strong>${escapeHtml(label)}</strong><br>Select a donation site for directions.`
-    )
-    .openPopup();
-
-  selectedStartMarker.on("dragend", (event) => {
-    const updatedPoint = event.target.getLatLng();
-
-    selectedStartPoint = {
-      lat: updatedPoint.lat,
-      lng: updatedPoint.lng
-    };
-
-    updateRouteStatus();
-
-    if (selectedDestination) {
-      requestRoute();
-    }
-  });
-
+  populateStartPinSelect();
   updateRouteStatus();
 
-  if (selectedDestination) {
+  if (selectedDestination && currentSidebarView === "directions") {
     requestRoute();
   }
 }
 
+function startPointPopupHtml(marker) {
+  const isSelected = marker === selectedStartMarker;
+  const pinNumber = marker.options.pinNumber;
+
+  return `
+    <div class="start-pin-popup">
+      <strong>
+        ${isSelected ? text("selectedPin") : `${text("selectPin")} #${pinNumber}`}
+      </strong>
+
+      <p>${escapeHtml(text("pinInstructions"))}</p>
+
+      ${
+        isSelected
+          ? ""
+          : `
+            <button
+              type="button"
+              class="select-start-pin"
+              data-action="select-start-pin"
+              data-pin-id="${marker.options.startPinId}"
+            >
+              ${escapeHtml(text("selectPin"))}
+            </button>
+          `
+      }
+
+      <button
+        type="button"
+        class="delete-start-pin"
+        data-action="confirm-delete-start-pin"
+        data-pin-id="${marker.options.startPinId}"
+      >
+        ${escapeHtml(text("removePin"))}
+      </button>
+    </div>
+  `;
+}
+
+function showDeletePinConfirmation(marker) {
+  if (!marker || !startMarkers.has(marker.options.startPinId)) {
+    return;
+  }
+
+  marker.setPopupContent(`
+    <div class="start-pin-popup">
+      <strong>${escapeHtml(text("deletePinTitle"))}</strong>
+      <p>${escapeHtml(text("deletePinMessage"))}</p>
+
+      <div class="popup-action-row">
+        <button
+          type="button"
+          class="cancel-pin-delete"
+          data-action="cancel-delete-start-pin"
+          data-pin-id="${marker.options.startPinId}"
+        >
+          ${escapeHtml(text("cancel"))}
+        </button>
+
+        <button
+          type="button"
+          class="delete-start-pin"
+          data-action="delete-start-pin"
+          data-pin-id="${marker.options.startPinId}"
+        >
+          ${escapeHtml(text("confirmDelete"))}
+        </button>
+      </div>
+    </div>
+  `);
+
+  marker.openPopup();
+}
+
+function deleteStartMarker(marker) {
+  if (!marker || !startMarkers.has(marker.options.startPinId)) {
+    return;
+  }
+
+  const wasSelected = marker === selectedStartMarker;
+
+  map.closePopup();
+  map.removeLayer(marker);
+  startMarkers.delete(marker.options.startPinId);
+
+  if (wasSelected) {
+    selectedStartMarker = null;
+    selectedStartPoint = null;
+    clearRoute();
+
+    const nextMarker = startMarkers.values().next().value;
+
+    if (nextMarker) {
+      setSelectedStartMarker(nextMarker);
+    }
+  }
+
+  populateStartPinSelect();
+  updateRouteStatus();
+}
+
+function addStartPoint(latlng, label = "") {
+  const L = window.L;
+  const pinNumber = ++startPinCounter;
+  const pinId = `start-pin-${pinNumber}`;
+
+  const marker = L.marker(latlng, {
+    icon: createStartPointMarker(false),
+    draggable: true,
+    keyboard: true,
+    title: label || `${text("selectPin")} #${pinNumber}`,
+    zIndexOffset: 1000,
+    startPinId: pinId,
+    pinNumber
+  }).addTo(map);
+
+  startMarkers.set(pinId, marker);
+  marker.bindPopup(startPointPopupHtml(marker));
+
+  marker.on("click", () => {
+    setSelectedStartMarker(marker);
+  });
+
+  marker.on("dragend", () => {
+    if (marker === selectedStartMarker) {
+      const updatedPoint = marker.getLatLng();
+
+      selectedStartPoint = {
+        lat: updatedPoint.lat,
+        lng: updatedPoint.lng
+      };
+
+      populateStartPinSelect();
+
+      if (selectedDestination && currentSidebarView === "directions") {
+        requestRoute();
+      } else {
+        updateRouteStatus();
+      }
+    }
+  });
+
+  setSelectedStartMarker(marker);
+
+  return marker;
+}
+
+function addPinAtMapCenter() {
+  const marker = addStartPoint(map.getCenter());
+
+  map.flyTo(marker.getLatLng(), Math.max(map.getZoom(), 14), {
+    duration: 0.45
+  });
+
+  marker.openPopup();
+}
+
 function selectRouteDestination(site) {
   selectedDestination = site;
+  renderSiteDetail(site);
+  populateDirectionsDestination();
+  updateVisibleRouteButtons();
 
+  if (currentSidebarView === "directions" && selectedStartPoint) {
+    requestRoute();
+  } else {
+    updateRouteStatus();
+  }
+}
+
+function openSiteDetail(site, centerMap = true) {
+  selectRouteDestination(site);
+  showSidebarView("detail");
+
+  if (centerMap) {
+    map.flyTo([Number(site.lat), Number(site.lng)], 15, {
+      duration: 0.75
+    });
+  }
+}
+
+function openDirectionsPanel() {
+  if (!selectedDestination) {
+    return;
+  }
+
+  populateStartPinSelect();
+  populateDirectionsDestination();
+  showSidebarView("directions");
   updateRouteStatus();
 
   if (selectedStartPoint) {
     requestRoute();
   }
+}
+
+function renderSiteDetail(site) {
+  const container = document.getElementById("site-detail-content");
+
+  if (!container || !site) {
+    return;
+  }
+
+  const name = safeText(site.name, "Unnamed donation site");
+  const address = formatSiteAddress(site);
+  const borough = safeText(site.borough, "NYC area");
+  const phone = safeText(site.phone);
+  const phoneAvailable = phone && phone.toLowerCase() !== "phone unavailable";
+
+  container.innerHTML = `
+    <span class="detail-kicker">${escapeHtml(text("selectedForDirections"))}</span>
+
+    <h2>${escapeHtml(name)}</h2>
+
+    <p class="detail-borough">${escapeHtml(borough)}</p>
+
+    <div class="detail-info-row">
+      <span class="detail-info-label">${escapeHtml(text("address"))}</span>
+      <p>${escapeHtml(address)}</p>
+    </div>
+
+    <div class="detail-info-row">
+      <span class="detail-info-label">${escapeHtml(text("phone"))}</span>
+      <p>${
+        phoneAvailable
+          ? escapeHtml(phone)
+          : escapeHtml(text("callUnavailable"))
+      }</p>
+    </div>
+
+    <div class="detail-action-grid">
+      <button id="open-directions-btn" class="primary-detail-action" type="button">
+        🧭 ${escapeHtml(text("routeButton"))}
+      </button>
+
+      ${
+        phoneAvailable
+          ? `
+            <a
+              class="detail-action-button call-button"
+              href="tel:${encodeURIComponent(phone)}"
+            >
+              ☎ ${escapeHtml(text("call"))}
+            </a>
+          `
+          : `
+            <button class="detail-action-button" type="button" disabled>
+              ☎ ${escapeHtml(text("callUnavailable"))}
+            </button>
+          `
+      }
+
+      <button id="send-to-phone-btn" class="detail-action-button" type="button">
+        📱 ${escapeHtml(text("sendToPhone"))}
+      </button>
+    </div>
+  `;
+
+  document
+    .getElementById("open-directions-btn")
+    .addEventListener("click", openDirectionsPanel);
+
+  document
+    .getElementById("send-to-phone-btn")
+    .addEventListener("click", sendDirectionsToPhone);
+}
+
+function getGoogleMapsDirectionsUrl() {
+  if (!selectedDestination) {
+    return "";
+  }
+
+  const params = new URLSearchParams({
+    api: "1",
+    destination: `${Number(selectedDestination.lat)},${Number(
+      selectedDestination.lng
+    )}`
+  });
+
+  if (selectedStartPoint) {
+    params.set(
+      "origin",
+      `${selectedStartPoint.lat},${selectedStartPoint.lng}`
+    );
+  }
+
+  return `https://www.google.com/maps/dir/?${params.toString()}`;
+}
+
+async function sendDirectionsToPhone() {
+  if (!selectedDestination) {
+    return;
+  }
+
+  const directionsUrl = getGoogleMapsDirectionsUrl();
+  const destinationName = safeText(selectedDestination.name);
+
+  try {
+    if (navigator.share) {
+      await navigator.share({
+        title: `${text("directionsHeading")}: ${destinationName}`,
+        text: `${text("directionsHeading")} — ${destinationName}`,
+        url: directionsUrl
+      });
+      return;
+    }
+
+    await navigator.clipboard.writeText(directionsUrl);
+    alert(text("phoneCopied"));
+  } catch (error) {
+    if (error.name === "AbortError") {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(directionsUrl);
+      alert(text("shareError"));
+    } catch {
+      window.prompt(text("phoneCopied"), directionsUrl);
+    }
+  }
+}
+
+function populateStartPinSelect() {
+  const select = document.getElementById("start-pin-select");
+
+  if (!select) {
+    return;
+  }
+
+  const selectedId = selectedStartMarker?.options.startPinId || "";
+
+  select.innerHTML = "";
+
+  const placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.textContent = text("selectStartPin");
+  select.appendChild(placeholder);
+
+  startMarkers.forEach((marker, pinId) => {
+    const latlng = marker.getLatLng();
+    const option = document.createElement("option");
+
+    option.value = pinId;
+    option.textContent = `${text("selectPin")} #${marker.options.pinNumber} (${latlng.lat.toFixed(4)}, ${latlng.lng.toFixed(4)})`;
+
+    select.appendChild(option);
+  });
+
+  select.value = selectedId;
+}
+
+function populateDirectionsDestination() {
+  const name = document.getElementById("directions-destination-name");
+  const address = document.getElementById("directions-destination-address");
+
+  if (!selectedDestination || !name || !address) {
+    return;
+  }
+
+  name.textContent = safeText(selectedDestination.name);
+  address.textContent = formatSiteAddress(selectedDestination);
+}
+
+function reverseDirections() {
+  if (!selectedDestination || !selectedStartMarker) {
+    return;
+  }
+
+  const destinationPoint = window.L.latLng(
+    Number(selectedDestination.lat),
+    Number(selectedDestination.lng)
+  );
+
+  const startPoint = selectedStartMarker.getLatLng();
+
+  selectedStartMarker.setLatLng(destinationPoint);
+
+  selectedStartPoint = {
+    lat: destinationPoint.lat,
+    lng: destinationPoint.lng
+  };
+
+  selectedDestination = {
+    ...selectedDestination,
+    lat: startPoint.lat,
+    lng: startPoint.lng,
+    name: `${text("startPoint")} #${selectedStartMarker.options.pinNumber}`,
+    address: `${startPoint.lat.toFixed(5)}, ${startPoint.lng.toFixed(5)}`,
+    phone: ""
+  };
+
+  renderSiteDetail(selectedDestination);
+  populateDirectionsDestination();
+  populateStartPinSelect();
+  requestRoute();
 }
 
 function updateRouteStatus() {
@@ -218,25 +741,12 @@ function updateRouteStatus() {
     return;
   }
 
-  if (!selectedStartPoint && !selectedDestination) {
-    status.textContent =
-      "Click or tap the map to set your start point, then select a donation site.";
+  if (!selectedDestination || !selectedStartMarker) {
+    status.textContent = text("selectStartAndMode");
     return;
   }
 
-  if (!selectedStartPoint) {
-    status.textContent =
-      "Now click or tap the map to set your start point.";
-    return;
-  }
-
-  if (!selectedDestination) {
-    status.textContent =
-      "Now select a donation site from the map or list.";
-    return;
-  }
-
-  status.textContent = `Route to ${selectedDestination.name}: calculating…`;
+  status.textContent = text("selectedStartMessage");
 }
 
 async function requestRoute() {
@@ -249,11 +759,8 @@ async function requestRoute() {
   const instructions = document.getElementById("route-instructions");
 
   if (!routeModeSelect || !status || !instructions) {
-    console.error("Route panel HTML elements are missing.");
     return;
   }
-
-  const mode = routeModeSelect.value;
 
   if (routeAbortController) {
     routeAbortController.abort();
@@ -261,7 +768,7 @@ async function requestRoute() {
 
   routeAbortController = new AbortController();
 
-  status.textContent = `Calculating ${mode} route…`;
+  status.textContent = `${text("calculatingRoute")}…`;
   instructions.innerHTML = "";
 
   const parameters = new URLSearchParams({
@@ -269,7 +776,7 @@ async function requestRoute() {
     startLng: selectedStartPoint.lng,
     endLat: Number(selectedDestination.lat),
     endLng: Number(selectedDestination.lng),
-    mode
+    mode: routeModeSelect.value
   });
 
   try {
@@ -293,9 +800,7 @@ async function requestRoute() {
     }
 
     console.error("Routing error:", error);
-
-    status.textContent =
-      "Could not calculate this route. Try another travel mode.";
+    status.textContent = text("routeError");
   }
 }
 
@@ -303,15 +808,14 @@ function drawRoute(routeData) {
   const L = window.L;
   const status = document.getElementById("route-status");
   const instructions = document.getElementById("route-instructions");
+  const routeFeature = routeData.features?.[0];
 
   if (routeLayer) {
     map.removeLayer(routeLayer);
   }
 
-  const routeFeature = routeData.features?.[0];
-
   if (!routeFeature) {
-    status.textContent = "No route found for this travel mode.";
+    status.textContent = text("noRoute");
     instructions.innerHTML = "";
     return;
   }
@@ -337,17 +841,12 @@ function drawRoute(routeData) {
   );
 
   status.textContent =
-    `${selectedDestination.name}: ${distanceKm.toFixed(1)} km · about ${minutes} min`;
+    `${safeText(selectedDestination.name)}: ${distanceKm.toFixed(1)} km · ${minutes} min`;
 
-  const steps = (properties.legs || [])
-    .flatMap((leg) => leg.steps || []);
+  const steps = (properties.legs || []).flatMap((leg) => leg.steps || []);
 
   if (!steps.length) {
-    instructions.innerHTML = `
-      <li>
-        Route shown on the map. Step-by-step directions are unavailable for this route.
-      </li>
-    `;
+    instructions.innerHTML = `<li>${escapeHtml(text("routeShown"))}</li>`;
     return;
   }
 
@@ -364,58 +863,204 @@ function drawRoute(routeData) {
     .join("");
 }
 
-function initMap() {
+function createSitePopupHtml(site) {
+  const name = safeText(site.name, "Unnamed donation site");
+  const address = formatSiteAddress(site);
+  const borough = safeText(site.borough, "NYC area");
+  const phone = safeText(site.phone, "Phone unavailable");
+
+  return `
+    <strong>${escapeHtml(name)}</strong><br>
+    <span class="popup-borough">${escapeHtml(borough)}</span><br>
+    ${escapeHtml(address)}<br>
+    <a href="tel:${encodeURIComponent(phone)}">${escapeHtml(phone)}</a>
+  `;
+}
+
+function displaySites(sites) {
   const L = window.L;
-  const mapElement = document.getElementById("map");
-  const locateButton = document.getElementById("locate-btn");
-  const zipFilter = document.getElementById("zipFilter");
-  const routeModeSelect = document.getElementById("route-mode");
+  const listContainer = document.getElementById("site-list");
 
-  if (!L) {
-    console.error(
-      "Leaflet failed to load. Make sure leaflet.js appears before app.js in index.html."
-    );
+  markerGroup.clearLayers();
+  listContainer.innerHTML = "";
 
-    mapElement.innerHTML = `
-      <div class="map-error">
-        The map library failed to load. Please refresh or check the Leaflet script tag.
-      </div>
+  if (!sites.length) {
+    listContainer.innerHTML = `
+      <p class="empty-message">${escapeHtml(text("noSites"))}</p>
     `;
     return;
   }
 
-  if (!mapElement) {
-    console.error('The HTML element with id="map" is missing.');
+  sites.forEach((site) => {
+    const name = safeText(site.name, "Unnamed donation site");
+    const address = formatSiteAddress(site);
+    const borough = safeText(site.borough, "NYC area");
+    const phone = safeText(site.phone, "Phone unavailable");
+    const latitude = Number(site.lat);
+    const longitude = Number(site.lng);
+    const pinColor = getBoroughColor(site.borough);
+
+    const marker = L.marker([latitude, longitude], {
+      icon: createCustomMarker(pinColor),
+      title: name
+    });
+
+    marker.bindPopup(createSitePopupHtml(site));
+
+    marker.on("click", () => {
+      openSiteDetail(site, false);
+    });
+
+    markerGroup.addLayer(marker);
+
+    const card = document.createElement("article");
+    card.className = "site-card";
+    card.style.borderLeft = `5px solid ${pinColor}`;
+    card.tabIndex = 0;
+
+    card.innerHTML = `
+      <strong>${escapeHtml(name)}</strong>
+      <p class="site-address">${escapeHtml(address)}</p>
+      <p class="site-borough">${escapeHtml(borough)}</p>
+      <p class="site-phone">${escapeHtml(phone)}</p>
+      <button type="button" class="route-btn">
+        ${escapeHtml(text("routeButton"))}
+      </button>
+    `;
+
+    const openDetail = () => {
+      marker.openPopup();
+      openSiteDetail(site);
+    };
+
+    card.addEventListener("click", openDetail);
+
+    card.querySelector(".route-btn").addEventListener("click", (event) => {
+      event.stopPropagation();
+      openDetail();
+      openDirectionsPanel();
+    });
+
+    card.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        openDetail();
+      }
+    });
+
+    listContainer.appendChild(card);
+  });
+}
+
+function updateVisibleRouteButtons() {
+  document.querySelectorAll(".route-btn").forEach((button) => {
+    button.textContent = text("routeButton");
+  });
+}
+
+function populateZipFilter(sites) {
+  const zipFilter = document.getElementById("zipFilter");
+  const selectedZip = zipFilter.value || "all";
+
+  const zipCodes = [
+    ...new Set(
+      sites
+        .map((site) => safeText(site.zip).trim())
+        .filter(Boolean)
+    )
+  ].sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+
+  zipFilter.innerHTML = "";
+
+  const allOption = document.createElement("option");
+  allOption.value = "all";
+  allOption.textContent = text("allZipCodes");
+  zipFilter.appendChild(allOption);
+
+  zipCodes.forEach((zip) => {
+    const option = document.createElement("option");
+    option.value = zip;
+    option.textContent = zip;
+    zipFilter.appendChild(option);
+  });
+
+  zipFilter.value = zipCodes.includes(selectedZip) ? selectedZip : "all";
+}
+
+function filterMarkers() {
+  const selectedZip = document.getElementById("zipFilter").value;
+
+  if (selectedZip === "all") {
+    displaySites(allSites);
     return;
   }
 
-  map = L.map("map").setView([40.7128, -74.006], 11);
+  displaySites(
+    allSites.filter((site) => safeText(site.zip).trim() === selectedZip)
+  );
+}
 
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19,
-    attribution: "&copy; OpenStreetMap contributors"
-  }).addTo(map);
-
-  markerGroup = L.layerGroup().addTo(map);
-
-  addBoroughLegend();
-
-  map.on("click", (event) => {
-    setStartPoint(event.latlng);
+function addBoroughLegend() {
+  const legend = window.L.control({
+    position: "bottomright"
   });
 
-  locateButton.addEventListener("click", locateUser);
-  zipFilter.addEventListener("change", filterMarkers);
+  legend.onAdd = function () {
+    const container = window.L.DomUtil.create(
+      "div",
+      "borough-legend leaflet-control"
+    );
 
-  if (routeModeSelect) {
-    routeModeSelect.addEventListener("change", () => {
-      if (selectedStartPoint && selectedDestination) {
-        requestRoute();
-      }
-    });
+    container.id = "borough-legend";
+    renderBoroughLegend(container);
+
+    window.L.DomEvent.disableClickPropagation(container);
+    window.L.DomEvent.disableScrollPropagation(container);
+
+    return container;
+  };
+
+  legend.addTo(map);
+}
+
+function renderBoroughLegend(container) {
+  if (!container) {
+    return;
   }
 
-  loadSites();
+  container.innerHTML = `
+    <div class="borough-legend-title">${escapeHtml(text("boroughLegend"))}</div>
+
+    <div class="borough-legend-item">
+      <span class="borough-legend-dot" style="background: orange;"></span>
+      Queens
+    </div>
+
+    <div class="borough-legend-item">
+      <span class="borough-legend-dot" style="background: purple;"></span>
+      Brooklyn
+    </div>
+
+    <div class="borough-legend-item">
+      <span class="borough-legend-dot" style="background: red;"></span>
+      Bronx
+    </div>
+
+    <div class="borough-legend-item">
+      <span class="borough-legend-dot" style="background: blue;"></span>
+      Manhattan
+    </div>
+
+    <div class="borough-legend-item">
+      <span class="borough-legend-dot" style="background: green;"></span>
+      Staten Island / other
+    </div>
+
+    <div class="borough-legend-item">
+      <span class="borough-legend-pin">📍</span>
+      ${escapeHtml(text("startPointLegend"))}
+    </div>
+  `;
 }
 
 async function loadSites() {
@@ -452,138 +1097,17 @@ async function loadSites() {
   }
 }
 
-function populateZipFilter(sites) {
-  const zipFilter = document.getElementById("zipFilter");
-
-  const zipCodes = [
-    ...new Set(
-      sites
-        .map((site) => safeText(site.zip).trim())
-        .filter(Boolean)
-    )
-  ].sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
-
-  zipFilter.innerHTML = `<option value="all">All ZIP codes</option>`;
-
-  zipCodes.forEach((zip) => {
-    const option = document.createElement("option");
-    option.value = zip;
-    option.textContent = zip;
-    zipFilter.appendChild(option);
-  });
-}
-
-function displaySites(sites) {
-  const L = window.L;
-  const listContainer = document.getElementById("site-list");
-
-  markerGroup.clearLayers();
-  listContainer.innerHTML = "";
-
-  if (sites.length === 0) {
-    listContainer.innerHTML = `
-      <p class="empty-message">
-        No verified donation sites have been found yet. This map will update
-        when the scraper identifies active collection locations.
-      </p>
-    `;
-    return;
-  }
-
-  sites.forEach((site) => {
-    const name = safeText(site.name, "Unnamed donation site");
-    const address = safeText(site.address);
-    const borough = safeText(site.borough, "NYC area");
-    const phone = safeText(site.phone, "Phone unavailable");
-    const latitude = Number(site.lat);
-    const longitude = Number(site.lng);
-    const pinColor = getBoroughColor(site.borough);
-
-    const marker = L.marker([latitude, longitude], {
-      icon: createCustomMarker(pinColor),
-      title: name
-    });
-
-    marker.bindPopup(`
-      <strong>${escapeHtml(name)}</strong><br>
-      <span style="color: #666; font-size: 12px;">
-        ${escapeHtml(borough)}
-      </span><br>
-      ${escapeHtml(address)}<br>
-      <a href="tel:${encodeURIComponent(phone)}">${escapeHtml(phone)}</a><br>
-      <span style="color: #0b5cab; font-size: 12px;">
-        Click this marker to select it for routing.
-      </span>
-    `);
-
-    marker.on("click", () => {
-      selectRouteDestination(site);
-    });
-
-    markerGroup.addLayer(marker);
-
-    const card = document.createElement("article");
-    card.className = "site-card";
-    card.style.borderLeft = `5px solid ${pinColor}`;
-    card.tabIndex = 0;
-
-    card.innerHTML = `
-      <strong>${escapeHtml(name)}</strong>
-      <p class="site-address">${escapeHtml(address)}</p>
-      <p class="site-phone">${escapeHtml(phone)}</p>
-      <button type="button" class="route-btn">
-        Choose for route
-      </button>
-    `;
-
-    const focusSite = () => {
-      map.flyTo([latitude, longitude], 15, {
-        duration: 0.75
-      });
-
-      marker.openPopup();
-      selectRouteDestination(site);
-    };
-
-    card.addEventListener("click", focusSite);
-
-    card.addEventListener("keydown", (event) => {
-      if (event.key === "Enter" || event.key === " ") {
-        event.preventDefault();
-        focusSite();
-      }
-    });
-
-    listContainer.appendChild(card);
-  });
-}
-
-function filterMarkers() {
-  const selectedZip = document.getElementById("zipFilter").value;
-
-  if (selectedZip === "all") {
-    displaySites(allSites);
-    return;
-  }
-
-  const filteredSites = allSites.filter(
-    (site) => safeText(site.zip).trim() === selectedZip
-  );
-
-  displaySites(filteredSites);
-}
-
 function locateUser() {
   const L = window.L;
   const button = document.getElementById("locate-btn");
 
   if (!navigator.geolocation) {
-    button.textContent = "❌ Location Unsupported";
-    alert("This browser does not support location services.");
+    button.textContent = text("locationUnsupported");
+    alert(text("locationNotSupported"));
     return;
   }
 
-  button.textContent = "🌀 Finding you...";
+  button.textContent = text("findingLocation");
   button.disabled = true;
 
   map.once("locationfound", (event) => {
@@ -593,31 +1117,29 @@ function locateUser() {
 
     userLocationMarker = L.marker(event.latlng, {
       icon: createUserLocationMarker(),
-      title: "Your location"
+      title: text("yourLocation")
     })
       .addTo(map)
-      .bindPopup("<strong>You are here</strong>")
-      .openPopup();
+      .bindPopup(`<strong>${escapeHtml(text("youAreHere"))}</strong>`);
 
-    setStartPoint(event.latlng, "Your current location");
+    const startMarker = addStartPoint(event.latlng, text("yourLocation"));
 
     map.flyTo(event.latlng, 14, {
       duration: 0.75
     });
 
-    button.textContent = "📍 Location Found";
+    startMarker.openPopup();
+    button.textContent = text("locationFound");
     button.disabled = false;
   });
 
   map.once("locationerror", (event) => {
     console.error("Location error:", event.message);
 
-    button.textContent = "❌ Location Denied";
+    button.textContent = text("locationUnsupported");
     button.disabled = false;
 
-    alert(
-      "Could not access your location. Check browser privacy permissions and try again."
-    );
+    alert(text("locationDeniedAlert"));
   });
 
   map.locate({
@@ -630,14 +1152,278 @@ function locateUser() {
 
 function updateTimestamp() {
   const timestamp = document.getElementById("timestamp");
-  const now = new Date();
 
-  timestamp.textContent = `Last checked: ${now.toLocaleString([], {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit"
-  })}`;
+  timestamp.textContent = `${text("lastChecked")}: ${new Date().toLocaleString(
+    currentLanguage === "es" ? "es-US" : "en-US",
+    {
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit"
+    }
+  )}`;
+}
+
+function refreshStartPinPopups() {
+  startMarkers.forEach((marker) => {
+    marker.setIcon(createStartPointMarker(marker === selectedStartMarker));
+    marker.setPopupContent(startPointPopupHtml(marker));
+  });
+}
+
+function applyLanguage() {
+  document.documentElement.lang = currentLanguage;
+  document.title = text("documentTitle");
+
+  document.getElementById("site-title").textContent = text("title");
+  document.getElementById("site-subtitle").textContent = text("subtitle");
+  document.getElementById("zip-filter-label").textContent = text("zipLabel");
+  document.getElementById("instructions-heading").textContent =
+    text("instructionsHeading");
+  document.getElementById("instructions-text").textContent =
+    text("instructions");
+  document.getElementById("add-pin-btn").textContent = text("addPin");
+  document.getElementById("back-to-list-btn").textContent =
+    text("detailsBack");
+  document.getElementById("back-from-directions-btn").textContent =
+    text("directionsBack");
+  document.getElementById("directions-heading").textContent =
+    text("directionsHeading");
+  document.getElementById("start-point-label").textContent =
+    text("startPoint");
+  document.getElementById("destination-label").textContent =
+    text("destination");
+  document.getElementById("travel-mode-label").textContent =
+    text("travelMode");
+  document.getElementById("add-pin-from-directions-btn").textContent =
+    text("addPin");
+
+  const languageToggle = document.getElementById("language-toggle");
+
+  languageToggle.setAttribute(
+    "aria-checked",
+    currentLanguage === "es" ? "true" : "false"
+  );
+
+  languageToggle.setAttribute(
+    "aria-label",
+    currentLanguage === "en"
+      ? "Switch website language to Spanish"
+      : "Cambiar el idioma del sitio web a inglés"
+  );
+
+  document.getElementById("swap-directions-btn").setAttribute(
+    "aria-label",
+    text("reverseDirections")
+  );
+
+  document.getElementById("swap-directions-btn").title =
+    text("reverseDirections");
+
+  const routeModeSelect = document.getElementById("route-mode");
+
+  routeModeSelect.options[0].textContent = text("transit");
+  routeModeSelect.options[1].textContent = text("drive");
+  routeModeSelect.options[2].textContent = text("walk");
+  routeModeSelect.options[3].textContent = text("bicycle");
+
+  document.getElementById("site-list").setAttribute(
+    "aria-label",
+    text("siteListLabel")
+  );
+
+  document.querySelector(".filter-group").setAttribute(
+    "aria-label",
+    text("filterLabel")
+  );
+
+  document.getElementById("map").setAttribute("aria-label", text("mapLabel"));
+
+  const locateButton = document.getElementById("locate-btn");
+
+  if (!locateButton.disabled) {
+    locateButton.textContent = text("locate");
+  }
+
+  populateZipFilter(allSites);
+
+  const selectedZip = document.getElementById("zipFilter").value || "all";
+
+  if (allSites.length) {
+    displaySites(
+      selectedZip === "all"
+        ? allSites
+        : allSites.filter(
+            (site) => safeText(site.zip).trim() === selectedZip
+          )
+    );
+  }
+
+  if (selectedDestination) {
+    renderSiteDetail(selectedDestination);
+    populateDirectionsDestination();
+  }
+
+  populateStartPinSelect();
+  refreshStartPinPopups();
+  renderBoroughLegend(document.getElementById("borough-legend"));
+  updateRouteStatus();
+  updateTimestamp();
+}
+
+function toggleLanguage() {
+  currentLanguage = currentLanguage === "en" ? "es" : "en";
+  applyLanguage();
+}
+
+function initMap() {
+  const L = window.L;
+  const mapElement = document.getElementById("map");
+
+  if (!mapElement) {
+    console.error('The HTML element with id="map" is missing.');
+    return;
+  }
+
+  if (!L) {
+    mapElement.innerHTML = `
+      <div class="map-error">
+        The map library failed to load. Please refresh or check the Leaflet script tag.
+      </div>
+    `;
+    return;
+  }
+
+  map = L.map("map").setView([40.7128, -74.006], 11);
+
+  L.tileLayer(
+    "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+    {
+      subdomains: "abcd",
+      maxZoom: 20,
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+    }
+  ).addTo(map);
+
+  markerGroup = L.layerGroup().addTo(map);
+
+  addBoroughLegend();
+
+  map.on("click", (event) => {
+    addStartPoint(event.latlng);
+  });
+
+  map.on("popupopen", (event) => {
+    const popupElement = event.popup.getElement();
+
+    if (!popupElement) {
+      return;
+    }
+
+    const selectButton = popupElement.querySelector(
+      '[data-action="select-start-pin"]'
+    );
+
+    const confirmDeleteButton = popupElement.querySelector(
+      '[data-action="confirm-delete-start-pin"]'
+    );
+
+    const cancelDeleteButton = popupElement.querySelector(
+      '[data-action="cancel-delete-start-pin"]'
+    );
+
+    const deleteButton = popupElement.querySelector(
+      '[data-action="delete-start-pin"]'
+    );
+
+    if (selectButton) {
+      selectButton.addEventListener("click", () => {
+        const marker = startMarkers.get(selectButton.dataset.pinId);
+
+        if (marker) {
+          setSelectedStartMarker(marker);
+        }
+      });
+    }
+
+    if (confirmDeleteButton) {
+      confirmDeleteButton.addEventListener("click", () => {
+        const marker = startMarkers.get(confirmDeleteButton.dataset.pinId);
+
+        if (marker) {
+          showDeletePinConfirmation(marker);
+        }
+      });
+    }
+
+    if (cancelDeleteButton) {
+      cancelDeleteButton.addEventListener("click", () => {
+        const marker = startMarkers.get(cancelDeleteButton.dataset.pinId);
+
+        if (marker) {
+          marker.setPopupContent(startPointPopupHtml(marker));
+          marker.openPopup();
+        }
+      });
+    }
+
+    if (deleteButton) {
+      deleteButton.addEventListener("click", () => {
+        const marker = startMarkers.get(deleteButton.dataset.pinId);
+
+        if (marker) {
+          deleteStartMarker(marker);
+        }
+      });
+    }
+  });
+
+  document.getElementById("locate-btn").addEventListener("click", locateUser);
+  document.getElementById("zipFilter").addEventListener("change", filterMarkers);
+
+  document
+    .getElementById("language-toggle")
+    .addEventListener("click", toggleLanguage);
+
+  document
+    .getElementById("add-pin-btn")
+    .addEventListener("click", addPinAtMapCenter);
+
+  document
+    .getElementById("add-pin-from-directions-btn")
+    .addEventListener("click", addPinAtMapCenter);
+
+  document.getElementById("back-to-list-btn").addEventListener("click", () => {
+    showSidebarView("home");
+  });
+
+  document
+    .getElementById("back-from-directions-btn")
+    .addEventListener("click", () => {
+      showSidebarView("detail");
+    });
+
+  document
+    .getElementById("start-pin-select")
+    .addEventListener("change", (event) => {
+      const marker = startMarkers.get(event.target.value);
+
+      if (marker) {
+        setSelectedStartMarker(marker);
+      }
+    });
+
+  document
+    .getElementById("route-mode")
+    .addEventListener("change", requestRoute);
+
+  document
+    .getElementById("swap-directions-btn")
+    .addEventListener("click", reverseDirections);
+
+  applyLanguage();
+  loadSites();
 }
 
 document.addEventListener("DOMContentLoaded", initMap);
