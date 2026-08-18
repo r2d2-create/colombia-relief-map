@@ -19,6 +19,8 @@ let lastRouteKey = "";
 let lastRouteData = null;
 let directionsHasOpened = false;
 let routeRequestStarted = false;
+let activeRouteGeometry = null;
+let activeRouteSummary = null;
 
 const startMarkers = new Map();
 const reverseGeocodeCache = new Map();
@@ -75,8 +77,6 @@ const translations = {
       "Choose a pinned location and travel mode to get directions.",
     chooseTravelModeFirst:
       "Choose a travel mode to calculate directions.",
-    selectedStartMessage:
-      "Pinned location selected. Choose a travel mode for directions.",
     calculatingRoute: "Calculating route",
     translatingRoute: "Translating directions…",
     routeError:
@@ -84,7 +84,6 @@ const translations = {
     noRoute: "No route found for this travel mode.",
     routeShown:
       "Route shown on the map. Step-by-step directions are unavailable for this route.",
-    walkStep: "Walk",
     takeLine: "Take",
     toward: "toward",
     from: "from",
@@ -106,7 +105,8 @@ const translations = {
     pinnedLocationLegend: "Your pinned location",
     phone: "Phone",
     address: "Address",
-    selectedForDirections: "Selected donation site"
+    selectedForDirections: "Selected donation site",
+    continueRoute: "Continue on the route."
   },
 
   es: {
@@ -156,8 +156,6 @@ const translations = {
       "Elige una ubicación marcada y un modo de viaje para obtener indicaciones.",
     chooseTravelModeFirst:
       "Elige un modo de viaje para calcular las indicaciones.",
-    selectedStartMessage:
-      "Ubicación marcada seleccionada. Elige un modo de viaje para obtener indicaciones.",
     calculatingRoute: "Calculando ruta",
     translatingRoute: "Traduciendo indicaciones…",
     routeError:
@@ -165,7 +163,6 @@ const translations = {
     noRoute: "No se encontró una ruta para este modo de viaje.",
     routeShown:
       "La ruta se muestra en el mapa. Las indicaciones paso a paso no están disponibles para esta ruta.",
-    walkStep: "Camina",
     takeLine: "Toma",
     toward: "hacia",
     from: "desde",
@@ -190,7 +187,8 @@ const translations = {
     pinnedLocationLegend: "Tu ubicación marcada",
     phone: "Teléfono",
     address: "Dirección",
-    selectedForDirections: "Lugar de donación seleccionado"
+    selectedForDirections: "Lugar de donación seleccionado",
+    continueRoute: "Continúa por la ruta."
   }
 };
 
@@ -457,6 +455,8 @@ function clearRoute() {
 
   lastRouteKey = "";
   lastRouteData = null;
+  activeRouteGeometry = null;
+  activeRouteSummary = null;
   routeRequestStarted = false;
 
   const instructions = document.getElementById("route-instructions");
@@ -992,10 +992,26 @@ function buildRouteKey() {
   ].join("|");
 }
 
+function buildRouteBaseKey() {
+  if (!selectedStartPoint || !selectedDestination) {
+    return "";
+  }
+
+  const mode = document.getElementById("route-mode")?.value || "";
+
+  return [
+    selectedStartPoint.lat.toFixed(5),
+    selectedStartPoint.lng.toFixed(5),
+    Number(selectedDestination.lat).toFixed(5),
+    Number(selectedDestination.lng).toFixed(5),
+    mode
+  ].join("|");
+}
+
 async function requestRoute(options = {}) {
   const {
-    preserveVisibleRoute = false,
-    fitBounds = true,
+    keepGeometry = false,
+    shouldFitBounds = true,
     statusMessage = ""
   } = options;
 
@@ -1017,15 +1033,16 @@ async function requestRoute(options = {}) {
 
   const routeKey = buildRouteKey();
 
-  if (routeKey === lastRouteKey && lastRouteData) {
-    drawRoute(lastRouteData, false);
-    return;
-  }
-
   if (routeCache.has(routeKey)) {
     lastRouteKey = routeKey;
     lastRouteData = routeCache.get(routeKey);
-    drawRoute(routeCache.get(routeKey), fitBounds);
+
+    if (keepGeometry) {
+      renderTranslatedInstructions(lastRouteData);
+    } else {
+      drawRoute(lastRouteData, shouldFitBounds);
+    }
+
     return;
   }
 
@@ -1035,10 +1052,9 @@ async function requestRoute(options = {}) {
 
   routeAbortController = new AbortController();
 
-  status.textContent =
-    statusMessage || `${text("calculatingRoute")}…`;
+  status.textContent = statusMessage || `${text("calculatingRoute")}…`;
 
-  if (!preserveVisibleRoute) {
+  if (!keepGeometry) {
     instructions.innerHTML = "";
   }
 
@@ -1070,7 +1086,11 @@ async function requestRoute(options = {}) {
     lastRouteKey = routeKey;
     lastRouteData = routeData;
 
-    drawRoute(routeData, fitBounds);
+    if (keepGeometry) {
+      renderTranslatedInstructions(routeData);
+    } else {
+      drawRoute(routeData, shouldFitBounds);
+    }
   } catch (error) {
     if (error.name === "AbortError") {
       return;
@@ -1078,7 +1098,7 @@ async function requestRoute(options = {}) {
 
     console.error("Routing error:", error);
 
-    if (!preserveVisibleRoute) {
+    if (!keepGeometry) {
       status.textContent = text("routeError");
     }
   }
@@ -1098,20 +1118,89 @@ function drawRoute(routeData, shouldFitBounds = true) {
     return;
   }
 
-  routeLayer = L.geoJSON(routeFeature, {
-    style: {
-      color: "#6f7d89",
-      weight: 5,
-      opacity: 0.45,
-      dashArray: "8 8"
+  activeRouteGeometry = routeFeature.geometry;
+  activeRouteSummary = {
+    distance: Number(routeFeature.properties?.distance || 0),
+    time: Number(routeFeature.properties?.time || 0)
+  };
+
+  routeLayer = L.geoJSON(
+    {
+      type: "Feature",
+      properties: {},
+      geometry: activeRouteGeometry
+    },
+    {
+      style: {
+        color: "#6f7d89",
+        weight: 5,
+        opacity: 0.45,
+        dashArray: "8 8"
+      }
     }
-  }).addTo(map);
+  ).addTo(map);
 
   const properties = routeFeature.properties || {};
   const steps = (properties.legs || []).flatMap((leg) => leg.steps || []);
 
   transitStepLayerGroup = L.layerGroup().addTo(map);
   transitBadgeLayerGroup = L.layerGroup().addTo(map);
+
+  drawTransitOverlays(steps);
+  renderRouteSummary(properties);
+  renderInstructions(steps);
+
+  if (shouldFitBounds && routeLayer.getBounds().isValid()) {
+    map.fitBounds(routeLayer.getBounds(), {
+      padding: [40, 40],
+      maxZoom: 14
+    });
+  }
+}
+
+function renderTranslatedInstructions(routeData) {
+  const routeFeature = routeData.features?.[0];
+
+  if (!routeFeature || !activeRouteGeometry || !routeLayer) {
+    drawRoute(routeData, false);
+    return;
+  }
+
+  const properties = routeFeature.properties || {};
+  const steps = (properties.legs || []).flatMap((leg) => leg.steps || []);
+
+  renderRouteSummary(activeRouteSummary || properties);
+  renderInstructions(steps);
+}
+
+function renderRouteSummary(properties) {
+  const status = document.getElementById("route-status");
+  const distanceKm = Number(properties.distance || 0) / 1000;
+  const minutes = Math.max(
+    1,
+    Math.round(Number(properties.time || 0) / 60)
+  );
+
+  status.textContent =
+    `${safeText(selectedDestination.name)}: ${distanceKm.toFixed(1)} km · ${minutes} min`;
+}
+
+function renderInstructions(steps) {
+  const instructions = document.getElementById("route-instructions");
+
+  if (!steps.length) {
+    instructions.innerHTML = `<li>${escapeHtml(text("routeShown"))}</li>`;
+    return;
+  }
+
+  instructions.innerHTML = steps
+    .slice(0, 20)
+    .map((step) => createRouteInstructionHtml(step))
+    .join("");
+}
+
+function drawTransitOverlays(steps) {
+  const L = window.L;
 
   steps.forEach((step) => {
     if (step.travelMode !== "TRANSIT" || !step.polyline) {
@@ -1147,32 +1236,6 @@ function drawRoute(routeData, shouldFitBounds = true) {
       }).addTo(transitBadgeLayerGroup);
     }
   });
-
-  if (shouldFitBounds && routeLayer.getBounds().isValid()) {
-    map.fitBounds(routeLayer.getBounds(), {
-      padding: [40, 40],
-      maxZoom: 14
-    });
-  }
-
-  const distanceKm = Number(properties.distance || 0) / 1000;
-  const minutes = Math.max(
-    1,
-    Math.round(Number(properties.time || 0) / 60)
-  );
-
-  status.textContent =
-    `${safeText(selectedDestination.name)}: ${distanceKm.toFixed(1)} km · ${minutes} min`;
-
-  if (!steps.length) {
-    instructions.innerHTML = `<li>${escapeHtml(text("routeShown"))}</li>`;
-    return;
-  }
-
-  instructions.innerHTML = steps
-    .slice(0, 20)
-    .map((step) => createRouteInstructionHtml(step))
-    .join("");
 }
 
 function normalizeTransitColor(color, fallback) {
@@ -1292,7 +1355,7 @@ function createRouteInstructionHtml(step) {
       <li class="route-instruction route-instruction-walk">
         <span class="route-step-icon">🚶</span>
         <span>${escapeHtml(
-          step.instruction?.text || "Continue on the route."
+          step.instruction?.text || text("continueRoute")
         )}</span>
       </li>
     `;
@@ -1749,24 +1812,22 @@ function toggleLanguage() {
     ? "es"
     : "en";
 
-  const hasVisibleRoute =
+  const hasActiveRoute =
     routeLayer &&
+    activeRouteGeometry &&
     selectedStartPoint &&
     selectedDestination &&
     document.getElementById("route-mode")?.value;
 
   applyLanguage();
 
-  if (hasVisibleRoute) {
-    const status = document.getElementById("route-status");
-
-    if (status) {
-      status.textContent = text("translatingRoute");
-    }
+  if (hasActiveRoute) {
+    document.getElementById("route-status").textContent =
+      text("translatingRoute");
 
     requestRoute({
-      preserveVisibleRoute: true,
-      fitBounds: false,
+      keepGeometry: true,
+      shouldFitBounds: false,
       statusMessage: text("translatingRoute")
     });
   }
