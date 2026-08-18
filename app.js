@@ -11,8 +11,14 @@ let routeLayer = null;
 let routeAbortController = null;
 let currentLanguage = "en";
 let currentSidebarView = "home";
+let dragRouteTimer = null;
+let geocodeQueueTimer = null;
+let lastRouteKey = "";
+let lastRouteData = null;
 
 const startMarkers = new Map();
+const reverseGeocodeCache = new Map();
+const routeCache = new Map();
 
 const ROUTING_PROXY_URL =
   "https://colombia-relief-routing.end259.workers.dev/route";
@@ -31,27 +37,29 @@ const translations = {
     locationUnsupported: "❌ Location Unsupported",
     instructionsHeading: "Instructions",
     instructions:
-      "Click or tap anywhere on the map to add a red start pin. You can add multiple pins, press and hold a pin to drag it, and click or tap a pin to select or delete it. Select a donation site from the map or list to view the location’s details and get directions.",
+      "Click or tap anywhere on the map to add a red location pin. You can add multiple pins, press and hold a pin to drag it, and click or tap a pin to select or delete it. Select a donation site from the map or list to view the location’s details and get directions.",
     loadingSites: "Loading verified donation sites…",
     noSites:
       "No verified donation sites have been found yet. This map will update when the scraper identifies active collection locations.",
     routeButton: "Directions",
-    selectedPin: "Selected start pin",
-    selectPin: "Select this start pin",
+    selectedPin: "Selected pinned location",
+    selectPin: "Select this pinned location",
+    selectPinnedLocation: "Select a pinned location",
     removePin: "Delete pin",
     deletePinTitle: "Delete pin?",
-    deletePinMessage: "Do you want to delete this start pin?",
+    deletePinMessage: "Do you want to delete this pinned location?",
     cancel: "Cancel",
     confirmDelete: "Delete pin",
     pinInstructions:
       "Press and hold this pin, then drag it to move it. Select it to use it for directions.",
+    findingAddress: "Finding address…",
+    pinnedLocation: "Pinned location",
     yourLocation: "Your current location",
     youAreHere: "You are here",
     detailsBack: "← Back to donation sites",
     directionsBack: "← Back to donation site",
     directionsHeading: "Directions",
     startPoint: "Starting point",
-    selectStartPin: "Select a start pin",
     destination: "Destination",
     reverseDirections: "Reverse directions",
     travelMode: "Travel mode",
@@ -59,8 +67,10 @@ const translations = {
     drive: "Car",
     walk: "Walk",
     bicycle: "Bike",
-    selectStartAndMode: "Select a start pin and travel mode to get directions.",
-    selectedStartMessage: "Start pin selected. Choose a travel mode for directions.",
+    selectStartAndMode:
+      "Select a pinned location and travel mode to get directions.",
+    selectedStartMessage:
+      "Pinned location selected. Choose a travel mode for directions.",
     calculatingRoute: "Calculating route",
     routeError: "Could not calculate this route. Try another travel mode.",
     noRoute: "No route found for this travel mode.",
@@ -79,7 +89,7 @@ const translations = {
     siteListLabel: "Donation site locations",
     filterLabel: "Donation site filters",
     boroughLegend: "Donation-site borough",
-    startPointLegend: "Your start pin",
+    pinnedLocationLegend: "Your pinned location",
     phone: "Phone",
     address: "Address",
     selectedForDirections: "Selected donation site"
@@ -98,27 +108,29 @@ const translations = {
     locationUnsupported: "❌ Ubicación no disponible",
     instructionsHeading: "Instrucciones",
     instructions:
-      "Haz clic o toca cualquier lugar del mapa para agregar un pin rojo de inicio. Puedes agregar varios pins, mantener presionado un pin para arrastrarlo y hacer clic o tocar un pin para seleccionarlo o eliminarlo. Selecciona un lugar de donación en el mapa o la lista para ver los detalles y obtener indicaciones.",
+      "Haz clic o toca cualquier lugar del mapa para agregar un pin rojo de ubicación. Puedes agregar varios pins, mantener presionado un pin para arrastrarlo y hacer clic o tocar un pin para seleccionarlo o eliminarlo. Selecciona un lugar de donación en el mapa o la lista para ver los detalles y obtener indicaciones.",
     loadingSites: "Cargando lugares de donación verificados…",
     noSites:
       "Aún no se han encontrado lugares de donación verificados. Este mapa se actualizará cuando el recopilador identifique lugares de recolección activos.",
     routeButton: "Indicaciones",
-    selectedPin: "Pin de inicio seleccionado",
-    selectPin: "Seleccionar este pin de inicio",
+    selectedPin: "Ubicación marcada seleccionada",
+    selectPin: "Seleccionar esta ubicación marcada",
+    selectPinnedLocation: "Selecciona una ubicación marcada",
     removePin: "Eliminar pin",
     deletePinTitle: "¿Eliminar pin?",
-    deletePinMessage: "¿Quieres eliminar este pin de inicio?",
+    deletePinMessage: "¿Quieres eliminar esta ubicación marcada?",
     cancel: "Cancelar",
     confirmDelete: "Eliminar pin",
     pinInstructions:
       "Mantén presionado este pin y arrástralo para moverlo. Selecciónalo para usarlo en las indicaciones.",
+    findingAddress: "Buscando dirección…",
+    pinnedLocation: "Ubicación marcada",
     yourLocation: "Tu ubicación actual",
     youAreHere: "Estás aquí",
     detailsBack: "← Volver a los lugares de donación",
     directionsBack: "← Volver al lugar de donación",
     directionsHeading: "Indicaciones",
     startPoint: "Punto de partida",
-    selectStartPin: "Selecciona un pin de inicio",
     destination: "Destino",
     reverseDirections: "Invertir indicaciones",
     travelMode: "Modo de viaje",
@@ -127,9 +139,9 @@ const translations = {
     walk: "A pie",
     bicycle: "Bicicleta",
     selectStartAndMode:
-      "Selecciona un pin de inicio y un modo de viaje para obtener indicaciones.",
+      "Selecciona una ubicación marcada y un modo de viaje para obtener indicaciones.",
     selectedStartMessage:
-      "Pin de inicio seleccionado. Elige un modo de viaje para obtener indicaciones.",
+      "Ubicación marcada seleccionada. Elige un modo de viaje para obtener indicaciones.",
     calculatingRoute: "Calculando ruta",
     routeError:
       "No se pudo calcular esta ruta. Prueba otro modo de viaje.",
@@ -152,7 +164,7 @@ const translations = {
     siteListLabel: "Lugares de donación",
     filterLabel: "Filtros de lugares de donación",
     boroughLegend: "Distrito del lugar de donación",
-    startPointLegend: "Tu pin de inicio",
+    pinnedLocationLegend: "Tu ubicación marcada",
     phone: "Teléfono",
     address: "Dirección",
     selectedForDirections: "Lugar de donación seleccionado"
@@ -245,9 +257,9 @@ function createStartPointMarker(isSelected = false) {
         <span>📍</span>
       </div>
     `,
-    iconSize: [42, 52],
-    iconAnchor: [21, 51],
-    popupAnchor: [0, -46]
+    iconSize: [28, 35],
+    iconAnchor: [14, 34],
+    popupAnchor: [0, -31]
   });
 }
 
@@ -270,6 +282,106 @@ function createUserLocationMarker() {
     iconAnchor: [9, 9],
     popupAnchor: [0, -9]
   });
+}
+
+function coordinatesCacheKey(latlng) {
+  return `${Number(latlng.lat).toFixed(5)},${Number(latlng.lng).toFixed(5)}`;
+}
+
+function fallbackPinnedLocationAddress(latlng) {
+  return `${text("pinnedLocation")} (${Number(latlng.lat).toFixed(5)}, ${Number(
+    latlng.lng
+  ).toFixed(5)})`;
+}
+
+function formatReverseGeocodeAddress(address) {
+  if (!address) {
+    return "";
+  }
+
+  const parts = [
+    address.house_number,
+    address.road,
+    address.neighbourhood || address.suburb,
+    address.city || address.town || address.village,
+    address.state,
+    address.postcode
+  ].filter(Boolean);
+
+  return [...new Set(parts)].join(", ");
+}
+
+function getPinAddress(marker) {
+  const latlng = marker.getLatLng();
+
+  return (
+    marker.options.addressLabel ||
+    reverseGeocodeCache.get(coordinatesCacheKey(latlng)) ||
+    fallbackPinnedLocationAddress(latlng)
+  );
+}
+
+function queueReverseGeocode(marker) {
+  const latlng = marker.getLatLng();
+  const cacheKey = coordinatesCacheKey(latlng);
+
+  if (reverseGeocodeCache.has(cacheKey)) {
+    marker.options.addressLabel = reverseGeocodeCache.get(cacheKey);
+    populateStartPinSelect();
+    return;
+  }
+
+  marker.options.addressLabel = text("findingAddress");
+  populateStartPinSelect();
+
+  clearTimeout(geocodeQueueTimer);
+
+  geocodeQueueTimer = setTimeout(async () => {
+    try {
+      const parameters = new URLSearchParams({
+        format: "jsonv2",
+        lat: latlng.lat,
+        lon: latlng.lng,
+        zoom: "18",
+        addressdetails: "1",
+        "accept-language": currentLanguage === "es" ? "es" : "en"
+      });
+
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?${parameters.toString()}`,
+        {
+          headers: {
+            Accept: "application/json"
+          }
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Reverse geocoding failed.");
+      }
+
+      const result = await response.json();
+
+      const address =
+        formatReverseGeocodeAddress(result.address) ||
+        safeText(result.display_name) ||
+        fallbackPinnedLocationAddress(latlng);
+
+      reverseGeocodeCache.set(cacheKey, address);
+
+      if (startMarkers.has(marker.options.startPinId)) {
+        marker.options.addressLabel = address;
+        populateStartPinSelect();
+      }
+    } catch (error) {
+      console.warn("Could not find address for pinned location:", error);
+
+      if (startMarkers.has(marker.options.startPinId)) {
+        marker.options.addressLabel = fallbackPinnedLocationAddress(latlng);
+        populateStartPinSelect();
+      }
+    }
+  }, 250);
 }
 
 function showSidebarView(view) {
@@ -295,6 +407,9 @@ function clearRoute() {
     map.removeLayer(routeLayer);
     routeLayer = null;
   }
+
+  lastRouteKey = "";
+  lastRouteData = null;
 
   const instructions = document.getElementById("route-instructions");
 
@@ -335,12 +450,11 @@ function setSelectedStartMarker(marker) {
 
 function startPointPopupHtml(marker) {
   const isSelected = marker === selectedStartMarker;
-  const pinNumber = marker.options.pinNumber;
 
   return `
     <div class="start-pin-popup">
       <strong>
-        ${isSelected ? text("selectedPin") : `${text("selectPin")} #${pinNumber}`}
+        ${escapeHtml(isSelected ? text("selectedPin") : text("selectPin"))}
       </strong>
 
       <p>${escapeHtml(text("pinInstructions"))}</p>
@@ -434,6 +548,53 @@ function deleteStartMarker(marker) {
   updateRouteStatus();
 }
 
+function handlePopupActions(event) {
+  const popupElement = event.popup.getElement();
+
+  if (!popupElement) {
+    return;
+  }
+
+  popupElement.addEventListener("click", (clickEvent) => {
+    const actionButton = clickEvent.target.closest("[data-action]");
+
+    if (!actionButton) {
+      return;
+    }
+
+    clickEvent.preventDefault();
+    clickEvent.stopPropagation();
+
+    const marker = startMarkers.get(actionButton.dataset.pinId);
+
+    if (!marker) {
+      return;
+    }
+
+    switch (actionButton.dataset.action) {
+      case "select-start-pin":
+        setSelectedStartMarker(marker);
+        break;
+
+      case "confirm-delete-start-pin":
+        showDeletePinConfirmation(marker);
+        break;
+
+      case "cancel-delete-start-pin":
+        marker.setPopupContent(startPointPopupHtml(marker));
+        marker.openPopup();
+        break;
+
+      case "delete-start-pin":
+        deleteStartMarker(marker);
+        break;
+
+      default:
+        break;
+    }
+  });
+}
+
 function addStartPoint(latlng, label = "") {
   const L = window.L;
   const pinNumber = ++startPinCounter;
@@ -443,10 +604,11 @@ function addStartPoint(latlng, label = "") {
     icon: createStartPointMarker(false),
     draggable: true,
     keyboard: true,
-    title: label || `${text("selectPin")} #${pinNumber}`,
+    title: label || text("pinnedLocation"),
     zIndexOffset: 1000,
     startPinId: pinId,
-    pinNumber
+    pinNumber,
+    addressLabel: label || ""
   }).addTo(map);
 
   startMarkers.set(pinId, marker);
@@ -457,9 +619,12 @@ function addStartPoint(latlng, label = "") {
   });
 
   marker.on("dragend", () => {
-    if (marker === selectedStartMarker) {
-      const updatedPoint = marker.getLatLng();
+    const updatedPoint = marker.getLatLng();
 
+    marker.options.addressLabel = "";
+    queueReverseGeocode(marker);
+
+    if (marker === selectedStartMarker) {
       selectedStartPoint = {
         lat: updatedPoint.lat,
         lng: updatedPoint.lng
@@ -467,13 +632,21 @@ function addStartPoint(latlng, label = "") {
 
       populateStartPinSelect();
 
+      clearTimeout(dragRouteTimer);
+
       if (selectedDestination && currentSidebarView === "directions") {
-        requestRoute();
+        dragRouteTimer = setTimeout(() => {
+          requestRoute();
+        }, 180);
       } else {
         updateRouteStatus();
       }
     }
   });
+
+  if (!label) {
+    queueReverseGeocode(marker);
+  }
 
   setSelectedStartMarker(marker);
 
@@ -658,15 +831,14 @@ function populateStartPinSelect() {
 
   const placeholder = document.createElement("option");
   placeholder.value = "";
-  placeholder.textContent = text("selectStartPin");
+  placeholder.textContent = text("selectPinnedLocation");
   select.appendChild(placeholder);
 
   startMarkers.forEach((marker, pinId) => {
-    const latlng = marker.getLatLng();
     const option = document.createElement("option");
 
     option.value = pinId;
-    option.textContent = `${text("selectPin")} #${marker.options.pinNumber} (${latlng.lat.toFixed(4)}, ${latlng.lng.toFixed(4)})`;
+    option.textContent = getPinAddress(marker);
 
     select.appendChild(option);
   });
@@ -697,8 +869,10 @@ function reverseDirections() {
   );
 
   const startPoint = selectedStartMarker.getLatLng();
+  const formerStartAddress = getPinAddress(selectedStartMarker);
 
   selectedStartMarker.setLatLng(destinationPoint);
+  selectedStartMarker.options.addressLabel = formatSiteAddress(selectedDestination);
 
   selectedStartPoint = {
     lat: destinationPoint.lat,
@@ -709,8 +883,8 @@ function reverseDirections() {
     ...selectedDestination,
     lat: startPoint.lat,
     lng: startPoint.lng,
-    name: `${text("startPoint")} #${selectedStartMarker.options.pinNumber}`,
-    address: `${startPoint.lat.toFixed(5)}, ${startPoint.lng.toFixed(5)}`,
+    name: text("pinnedLocation"),
+    address: formerStartAddress,
     phone: ""
   };
 
@@ -735,6 +909,22 @@ function updateRouteStatus() {
   status.textContent = text("selectedStartMessage");
 }
 
+function buildRouteKey() {
+  if (!selectedStartPoint || !selectedDestination) {
+    return "";
+  }
+
+  const mode = document.getElementById("route-mode")?.value || "transit";
+
+  return [
+    selectedStartPoint.lat.toFixed(5),
+    selectedStartPoint.lng.toFixed(5),
+    Number(selectedDestination.lat).toFixed(5),
+    Number(selectedDestination.lng).toFixed(5),
+    mode
+  ].join("|");
+}
+
 async function requestRoute() {
   if (!selectedStartPoint || !selectedDestination) {
     return;
@@ -745,6 +935,20 @@ async function requestRoute() {
   const instructions = document.getElementById("route-instructions");
 
   if (!routeModeSelect || !status || !instructions) {
+    return;
+  }
+
+  const routeKey = buildRouteKey();
+
+  if (routeKey === lastRouteKey && lastRouteData) {
+    drawRoute(lastRouteData, false);
+    return;
+  }
+
+  if (routeCache.has(routeKey)) {
+    lastRouteKey = routeKey;
+    lastRouteData = routeCache.get(routeKey);
+    drawRoute(lastRouteData, true);
     return;
   }
 
@@ -769,7 +973,8 @@ async function requestRoute() {
     const response = await fetch(
       `${ROUTING_PROXY_URL}?${parameters.toString()}`,
       {
-        signal: routeAbortController.signal
+        signal: routeAbortController.signal,
+        cache: "force-cache"
       }
     );
 
@@ -779,7 +984,11 @@ async function requestRoute() {
       throw new Error(routeData.error || "Route request failed.");
     }
 
-    drawRoute(routeData);
+    routeCache.set(routeKey, routeData);
+    lastRouteKey = routeKey;
+    lastRouteData = routeData;
+
+    drawRoute(routeData, true);
   } catch (error) {
     if (error.name === "AbortError") {
       return;
@@ -790,7 +999,7 @@ async function requestRoute() {
   }
 }
 
-function drawRoute(routeData) {
+function drawRoute(routeData, shouldFitBounds = true) {
   const L = window.L;
   const status = document.getElementById("route-status");
   const instructions = document.getElementById("route-instructions");
@@ -814,10 +1023,12 @@ function drawRoute(routeData) {
     }
   }).addTo(map);
 
-  map.fitBounds(routeLayer.getBounds(), {
-    padding: [40, 40],
-    maxZoom: 14
-  });
+  if (shouldFitBounds && routeLayer.getBounds().isValid()) {
+    map.fitBounds(routeLayer.getBounds(), {
+      padding: [40, 40],
+      maxZoom: 14
+    });
+  }
 
   const properties = routeFeature.properties || {};
   const distanceKm = Number(properties.distance || 0) / 1000;
@@ -1033,12 +1244,12 @@ function renderBoroughLegend(container) {
 
     <div class="borough-legend-item">
       <span class="borough-legend-dot" style="background: green;"></span>
-      Staten Island / other
+      Staten Island
     </div>
 
     <div class="borough-legend-item">
       <span class="borough-legend-pin">📍</span>
-      ${escapeHtml(text("startPointLegend"))}
+      ${escapeHtml(text("pinnedLocationLegend"))}
     </div>
   `;
 }
@@ -1290,70 +1501,7 @@ function initMap() {
     addStartPoint(event.latlng);
   });
 
-  map.on("popupopen", (event) => {
-    const popupElement = event.popup.getElement();
-
-    if (!popupElement) {
-      return;
-    }
-
-    const selectButton = popupElement.querySelector(
-      '[data-action="select-start-pin"]'
-    );
-
-    const confirmDeleteButton = popupElement.querySelector(
-      '[data-action="confirm-delete-start-pin"]'
-    );
-
-    const cancelDeleteButton = popupElement.querySelector(
-      '[data-action="cancel-delete-start-pin"]'
-    );
-
-    const deleteButton = popupElement.querySelector(
-      '[data-action="delete-start-pin"]'
-    );
-
-    if (selectButton) {
-      selectButton.addEventListener("click", () => {
-        const marker = startMarkers.get(selectButton.dataset.pinId);
-
-        if (marker) {
-          setSelectedStartMarker(marker);
-        }
-      });
-    }
-
-    if (confirmDeleteButton) {
-      confirmDeleteButton.addEventListener("click", () => {
-        const marker = startMarkers.get(confirmDeleteButton.dataset.pinId);
-
-        if (marker) {
-          showDeletePinConfirmation(marker);
-        }
-      });
-    }
-
-    if (cancelDeleteButton) {
-      cancelDeleteButton.addEventListener("click", () => {
-        const marker = startMarkers.get(cancelDeleteButton.dataset.pinId);
-
-        if (marker) {
-          marker.setPopupContent(startPointPopupHtml(marker));
-          marker.openPopup();
-        }
-      });
-    }
-
-    if (deleteButton) {
-      deleteButton.addEventListener("click", () => {
-        const marker = startMarkers.get(deleteButton.dataset.pinId);
-
-        if (marker) {
-          deleteStartMarker(marker);
-        }
-      });
-    }
-  });
+  map.on("popupopen", handlePopupActions);
 
   document.getElementById("locate-btn").addEventListener("click", locateUser);
   document.getElementById("zipFilter").addEventListener("change", filterMarkers);
