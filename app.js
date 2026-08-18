@@ -8,6 +8,8 @@ let selectedStartMarker = null;
 let selectedStartPoint = null;
 let selectedDestination = null;
 let routeLayer = null;
+let transitStepLayerGroup = null;
+let transitBadgeLayerGroup = null;
 let routeAbortController = null;
 let currentLanguage = "en";
 let currentSidebarView = "home";
@@ -81,6 +83,12 @@ const translations = {
     noRoute: "No route found for this travel mode.",
     routeShown:
       "Route shown on the map. Step-by-step directions are unavailable for this route.",
+    walkStep: "Walk",
+    takeLine: "Take",
+    toward: "toward",
+    from: "from",
+    to: "to",
+    stops: "stops",
     call: "Call",
     sendToPhone: "Send to phone",
     callUnavailable: "Phone unavailable",
@@ -155,6 +163,12 @@ const translations = {
     noRoute: "No se encontró una ruta para este modo de viaje.",
     routeShown:
       "La ruta se muestra en el mapa. Las indicaciones paso a paso no están disponibles para esta ruta.",
+    walkStep: "Camina",
+    takeLine: "Toma",
+    toward: "hacia",
+    from: "desde",
+    to: "hasta",
+    stops: "paradas",
     call: "Llamar",
     sendToPhone: "Enviar al teléfono",
     callUnavailable: "Teléfono no disponible",
@@ -423,6 +437,16 @@ function clearRoute() {
   if (routeLayer) {
     map.removeLayer(routeLayer);
     routeLayer = null;
+  }
+
+  if (transitStepLayerGroup) {
+    map.removeLayer(transitStepLayerGroup);
+    transitStepLayerGroup = null;
+  }
+
+  if (transitBadgeLayerGroup) {
+    map.removeLayer(transitBadgeLayerGroup);
+    transitBadgeLayerGroup = null;
   }
 
   lastRouteKey = "";
@@ -1047,6 +1071,17 @@ function drawRoute(routeData, shouldFitBounds = true) {
 
   if (routeLayer) {
     map.removeLayer(routeLayer);
+    routeLayer = null;
+  }
+
+  if (transitStepLayerGroup) {
+    map.removeLayer(transitStepLayerGroup);
+    transitStepLayerGroup = null;
+  }
+
+  if (transitBadgeLayerGroup) {
+    map.removeLayer(transitBadgeLayerGroup);
+    transitBadgeLayerGroup = null;
   }
 
   if (!routeFeature) {
@@ -1057,11 +1092,53 @@ function drawRoute(routeData, shouldFitBounds = true) {
 
   routeLayer = L.geoJSON(routeFeature, {
     style: {
-      color: "#0b5cab",
-      weight: 6,
-      opacity: 0.85
+      color: "#6f7d89",
+      weight: 5,
+      opacity: 0.45,
+      dashArray: "8 8"
     }
   }).addTo(map);
+
+  const properties = routeFeature.properties || {};
+  const steps = (properties.legs || []).flatMap((leg) => leg.steps || []);
+
+  transitStepLayerGroup = L.layerGroup().addTo(map);
+  transitBadgeLayerGroup = L.layerGroup().addTo(map);
+
+  steps.forEach((step) => {
+    if (step.travelMode !== "TRANSIT" || !step.polyline) {
+      return;
+    }
+
+    const line = step.transitDetails?.transitLine || {};
+    const color = normalizeTransitColor(line.color, "#0b5cab");
+    const textColor = normalizeTransitColor(line.textColor, "#ffffff");
+    const coordinates = decodeGooglePolylineForLeaflet(step.polyline);
+
+    if (coordinates.length < 2) {
+      return;
+    }
+
+    L.polyline(coordinates, {
+      color,
+      weight: 8,
+      opacity: 0.95,
+      lineCap: "round",
+      lineJoin: "round"
+    }).addTo(transitStepLayerGroup);
+
+    const midpoint = coordinates[Math.floor(coordinates.length / 2)];
+    const routeLabel = getTransitRouteLabel(line);
+
+    if (midpoint && routeLabel) {
+      L.marker(midpoint, {
+        icon: createTransitBadge(routeLabel, color, textColor),
+        interactive: false,
+        keyboard: false,
+        zIndexOffset: 600
+      }).addTo(transitBadgeLayerGroup);
+    }
+  });
 
   if (shouldFitBounds && routeLayer.getBounds().isValid()) {
     map.fitBounds(routeLayer.getBounds(), {
@@ -1070,7 +1147,6 @@ function drawRoute(routeData, shouldFitBounds = true) {
     });
   }
 
-  const properties = routeFeature.properties || {};
   const distanceKm = Number(properties.distance || 0) / 1000;
   const minutes = Math.max(
     1,
@@ -1080,24 +1156,162 @@ function drawRoute(routeData, shouldFitBounds = true) {
   status.textContent =
     `${safeText(selectedDestination.name)}: ${distanceKm.toFixed(1)} km · ${minutes} min`;
 
-  const steps = (properties.legs || []).flatMap((leg) => leg.steps || []);
-
   if (!steps.length) {
     instructions.innerHTML = `<li>${escapeHtml(text("routeShown"))}</li>`;
     return;
   }
 
   instructions.innerHTML = steps
-    .slice(0, 15)
-    .map((step) => {
-      const instruction =
-        step.instruction?.text ||
-        step.instruction ||
-        "Continue on the route.";
-
-      return `<li>${escapeHtml(instruction)}</li>`;
-    })
+    .slice(0, 20)
+    .map((step) => createRouteInstructionHtml(step))
     .join("");
+}
+
+function normalizeTransitColor(color, fallback) {
+  const value = safeText(color).trim();
+
+  if (!value) {
+    return fallback;
+  }
+
+  return value.startsWith("#") ? value : `#${value}`;
+}
+
+function getTransitRouteLabel(line) {
+  return safeText(line.nameShort || line.name).trim();
+}
+
+function getTransitVehicleEmoji(vehicleType) {
+  switch (vehicleType) {
+    case "SUBWAY":
+      return "🚇";
+    case "BUS":
+      return "🚌";
+    case "TRAIN":
+    case "RAIL":
+      return "🚆";
+    case "LIGHT_RAIL":
+      return "🚊";
+    default:
+      return "🚉";
+  }
+}
+
+function createTransitBadge(label, backgroundColor, textColor) {
+  const L = window.L;
+  const safeLabel = escapeHtml(label).slice(0, 6);
+
+  return L.divIcon({
+    className: "transit-route-badge-wrapper",
+    html: `
+      <div
+        class="transit-route-badge"
+        style="background: ${backgroundColor}; color: ${textColor};"
+        aria-label="Transit line ${safeLabel}"
+      >
+        ${safeLabel}
+      </div>
+    `,
+    iconSize: [32, 32],
+    iconAnchor: [16, 16]
+  });
+}
+
+function decodeGooglePolylineForLeaflet(encoded) {
+  let index = 0;
+  let latitude = 0;
+  let longitude = 0;
+  const latLngs = [];
+
+  while (index < encoded.length) {
+    let shift = 0;
+    let result = 0;
+    let byte;
+
+    do {
+      byte = encoded.charCodeAt(index++) - 63;
+      result |= (byte & 0x1f) << shift;
+      shift += 5;
+    } while (byte >= 0x20);
+
+    latitude += result & 1 ? ~(result >> 1) : result >> 1;
+
+    shift = 0;
+    result = 0;
+
+    do {
+      byte = encoded.charCodeAt(index++) - 63;
+      result |= (byte & 0x1f) << shift;
+      shift += 5;
+    } while (byte >= 0x20);
+
+    longitude += result & 1 ? ~(result >> 1) : result >> 1;
+
+    latLngs.push([latitude / 1e5, longitude / 1e5]);
+  }
+
+  return latLngs;
+}
+
+function createRouteInstructionHtml(step) {
+  const transitDetails = step.transitDetails;
+  const transitLine = transitDetails?.transitLine;
+
+  if (!transitLine) {
+    return `
+      <li class="route-instruction route-instruction-walk">
+        <span class="route-step-icon">🚶</span>
+        <span>${escapeHtml(
+          step.instruction?.text || "Continue on the route."
+        )}</span>
+      </li>
+    `;
+  }
+
+  const label = getTransitRouteLabel(transitLine);
+  const color = normalizeTransitColor(transitLine.color, "#0b5cab");
+  const textColor = normalizeTransitColor(transitLine.textColor, "#ffffff");
+  const vehicleType = transitLine.vehicle?.type || "";
+  const vehicleEmoji = getTransitVehicleEmoji(vehicleType);
+  const headsign = safeText(transitDetails.headsign);
+  const departureStop = safeText(
+    transitDetails.stopDetails?.departureStop?.name
+  );
+  const arrivalStop = safeText(transitDetails.stopDetails?.arrivalStop?.name);
+  const stopCount = Number(transitDetails.stopCount || 0);
+
+  const serviceDescription = [
+    headsign ? `${text("toward")} ${headsign}` : "",
+    departureStop ? `${text("from")} ${departureStop}` : "",
+    arrivalStop ? `${text("to")} ${arrivalStop}` : "",
+    stopCount ? `${stopCount} ${text("stops")}` : ""
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+  return `
+    <li class="route-instruction route-instruction-transit">
+      <span
+        class="route-line-icon"
+        style="background: ${color}; color: ${textColor};"
+      >
+        ${escapeHtml(label)}
+      </span>
+
+      <span class="route-instruction-copy">
+        <strong>
+          ${vehicleEmoji} ${escapeHtml(text("takeLine"))}
+          ${escapeHtml(label)}
+        </strong>
+
+        ${
+          serviceDescription
+            ? `<small>${escapeHtml(serviceDescription)}</small>`
+            : ""
+        }
+      </span>
+    </li>
+  `;
 }
 
 function createSitePopupHtml(site) {
