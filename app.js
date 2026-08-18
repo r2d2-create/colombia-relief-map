@@ -23,7 +23,7 @@ const reverseGeocodeCache = new Map();
 const routeCache = new Map();
 
 const ROUTING_PROXY_URL =
-  "https://colombia-relief-routing.end259.workers.dev/route";
+  "https://colombia-relief-routing.end259-b4a.workers.dev/route";
 
 const translations = {
   en: {
