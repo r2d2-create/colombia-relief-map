@@ -47,8 +47,8 @@ const translations = {
     selectPinnedLocation: "Select a pinned location",
     removePin: "Delete pin",
     deletePinTitle: "Delete pin?",
-    cancel: "No",
-    confirmDelete: "Yes",
+    no: "No",
+    yes: "Yes",
     pinInstructions:
       "Press and hold this pin, then drag it to move it. Select it to use it for directions.",
     findingAddress: "Finding address…",
@@ -117,9 +117,8 @@ const translations = {
     selectPinnedLocation: "Selecciona una ubicación marcada",
     removePin: "Eliminar pin",
     deletePinTitle: "¿Eliminar pin?",
-    deletePinMessage: "¿Quieres eliminar esta ubicación marcada?",
-    cancel: "Cancelar",
-    confirmDelete: "Eliminar pin",
+    no: "No",
+    yes: "Sí",
     pinInstructions:
       "Mantén presionado este pin y arrástralo para moverlo. Selecciónalo para usarlo en las indicaciones.",
     findingAddress: "Buscando dirección…",
@@ -493,7 +492,6 @@ function showDeletePinConfirmation(marker) {
   marker.setPopupContent(`
     <div class="start-pin-popup">
       <strong>${escapeHtml(text("deletePinTitle"))}</strong>
-      <p>${escapeHtml(text("deletePinMessage"))}</p>
 
       <div class="popup-action-row">
         <button
@@ -502,7 +500,7 @@ function showDeletePinConfirmation(marker) {
           data-action="cancel-delete-start-pin"
           data-pin-id="${marker.options.startPinId}"
         >
-          ${escapeHtml(text("cancel"))}
+          ${escapeHtml(text("no"))}
         </button>
 
         <button
@@ -511,7 +509,7 @@ function showDeletePinConfirmation(marker) {
           data-action="delete-start-pin"
           data-pin-id="${marker.options.startPinId}"
         >
-          ${escapeHtml(text("confirmDelete"))}
+          ${escapeHtml(text("yes"))}
         </button>
       </div>
     </div>
