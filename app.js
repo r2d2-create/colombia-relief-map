@@ -1178,7 +1178,28 @@ function normalizeTransitColor(color, fallback) {
 }
 
 function getTransitRouteLabel(line) {
-  return safeText(line.nameShort || line.name).trim();
+  const shortName = safeText(line.nameShort).trim();
+  const fullName = safeText(line.name).trim();
+  const vehicleType = safeText(line.vehicle?.type).toUpperCase();
+
+  if (shortName) {
+    return shortName
+      .replace(/\s+line$/i, "")
+      .trim();
+  }
+
+  if (vehicleType === "SUBWAY") {
+    const subwayMatch = fullName.match(/^([A-Z0-9]+)\s*(?:train|line)?/i);
+
+    if (subwayMatch) {
+      return subwayMatch[1].toUpperCase();
+    }
+  }
+
+  return fullName
+    .replace(/\s+line$/i, "")
+    .replace(/\s+train$/i, "")
+    .trim();
 }
 
 function getTransitVehicleEmoji(vehicleType) {
