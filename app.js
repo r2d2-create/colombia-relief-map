@@ -981,7 +981,8 @@ function buildRouteKey() {
     selectedStartPoint.lng.toFixed(5),
     Number(selectedDestination.lat).toFixed(5),
     Number(selectedDestination.lng).toFixed(5),
-    mode
+    mode,
+    currentLanguage
   ].join("|");
 }
 
@@ -1030,7 +1031,8 @@ async function requestRoute() {
     startLng: selectedStartPoint.lng,
     endLat: Number(selectedDestination.lat),
     endLng: Number(selectedDestination.lng),
-    mode: routeModeSelect.value
+    mode: routeModeSelect.value,
+    language: currentLanguage
   });
 
   try {
@@ -1185,6 +1187,7 @@ function getTransitRouteLabel(line) {
   if (shortName) {
     return shortName
       .replace(/\s+line$/i, "")
+      .replace(/\s+train$/i, "")
       .trim();
   }
 
@@ -1739,6 +1742,10 @@ function toggleLanguage() {
   currentLanguage = document.getElementById("cyber-toggle").checked
     ? "es"
     : "en";
+
+  if (routeLayer) {
+    clearRoute();
+  }
 
   applyLanguage();
 }
