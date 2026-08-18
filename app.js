@@ -15,6 +15,8 @@ let dragRouteTimer = null;
 let geocodeQueueTimer = null;
 let lastRouteKey = "";
 let lastRouteData = null;
+let directionsHasOpened = false;
+let routeRequestStarted = false;
 
 const startMarkers = new Map();
 const reverseGeocodeCache = new Map();
@@ -62,16 +64,20 @@ const translations = {
     destination: "Destination",
     reverseDirections: "Reverse directions",
     travelMode: "Travel mode",
+    chooseTravelMode: "Choose a travel mode",
     transit: "Transit",
     drive: "Car",
     walk: "Walk",
     bicycle: "Bike",
-    selectStartAndMode:
-      "Select a pinned location and travel mode to get directions.",
+    chooseStartAndMode:
+      "Choose a pinned location and travel mode to get directions.",
+    chooseTravelModeFirst:
+      "Choose a travel mode to calculate directions.",
     selectedStartMessage:
       "Pinned location selected. Choose a travel mode for directions.",
     calculatingRoute: "Calculating route",
-    routeError: "Could not calculate this route. Try another travel mode.",
+    routeError:
+      "Could not calculate this route. Check your connection or try another travel mode.",
     noRoute: "No route found for this travel mode.",
     routeShown:
       "Route shown on the map. Step-by-step directions are unavailable for this route.",
@@ -132,17 +138,20 @@ const translations = {
     destination: "Destino",
     reverseDirections: "Invertir indicaciones",
     travelMode: "Modo de viaje",
+    chooseTravelMode: "Elige un modo de viaje",
     transit: "Transporte público",
     drive: "Auto",
     walk: "A pie",
     bicycle: "Bicicleta",
-    selectStartAndMode:
-      "Selecciona una ubicación marcada y un modo de viaje para obtener indicaciones.",
+    chooseStartAndMode:
+      "Elige una ubicación marcada y un modo de viaje para obtener indicaciones.",
+    chooseTravelModeFirst:
+      "Elige un modo de viaje para calcular las indicaciones.",
     selectedStartMessage:
       "Ubicación marcada seleccionada. Elige un modo de viaje para obtener indicaciones.",
     calculatingRoute: "Calculando ruta",
     routeError:
-      "No se pudo calcular esta ruta. Prueba otro modo de viaje.",
+      "No se pudo calcular esta ruta. Revisa tu conexión o prueba otro modo de viaje.",
     noRoute: "No se encontró una ruta para este modo de viaje.",
     routeShown:
       "La ruta se muestra en el mapa. Las indicaciones paso a paso no están disponibles para esta ruta.",
@@ -188,11 +197,18 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
+function normalizeStreetNumberComma(address) {
+  return safeText(address)
+    .replace(/^(\d+(?:-\d+)?)\s*,\s*/u, "$1 ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function formatSiteAddress(site) {
-  const address = safeText(site.address).replace(/\s+/g, " ").trim();
+  const address = normalizeStreetNumberComma(site.address);
   const zip = safeText(site.zip).trim();
 
-  if (!zip || new RegExp(`\\b${zip}\\b`).test(address)) {
+  if (!zip || /\b\d{5}(?:-\d{4})?\b/.test(address)) {
     return address;
   }
 
@@ -297,9 +313,12 @@ function formatReverseGeocodeAddress(address) {
     return "";
   }
 
+  const street = normalizeStreetNumberComma(
+    [address.house_number, address.road].filter(Boolean).join(" ")
+  );
+
   const parts = [
-    address.house_number,
-    address.road,
+    street,
     address.neighbourhood || address.suburb,
     address.city || address.town || address.village,
     address.state,
@@ -362,7 +381,7 @@ function queueReverseGeocode(marker) {
 
       const address =
         formatReverseGeocodeAddress(result.address) ||
-        safeText(result.display_name) ||
+        normalizeStreetNumberComma(result.display_name) ||
         fallbackPinnedLocationAddress(latlng);
 
       reverseGeocodeCache.set(cacheKey, address);
@@ -408,6 +427,7 @@ function clearRoute() {
 
   lastRouteKey = "";
   lastRouteData = null;
+  routeRequestStarted = false;
 
   const instructions = document.getElementById("route-instructions");
 
@@ -439,10 +459,9 @@ function setSelectedStartMarker(marker) {
   marker.openPopup();
 
   populateStartPinSelect();
-  updateRouteStatus();
 
-  if (selectedDestination && currentSidebarView === "directions") {
-    requestRoute();
+  if (directionsHasOpened) {
+    updateRouteStatus();
   }
 }
 
@@ -542,7 +561,10 @@ function deleteStartMarker(marker) {
   }
 
   populateStartPinSelect();
-  updateRouteStatus();
+
+  if (directionsHasOpened) {
+    updateRouteStatus();
+  }
 }
 
 function handlePopupActions(event) {
@@ -631,11 +653,15 @@ function addStartPoint(latlng, label = "") {
 
       clearTimeout(dragRouteTimer);
 
-      if (selectedDestination && currentSidebarView === "directions") {
+      if (
+        routeRequestStarted &&
+        selectedDestination &&
+        currentSidebarView === "directions"
+      ) {
         dragRouteTimer = setTimeout(() => {
           requestRoute();
         }, 180);
-      } else {
+      } else if (directionsHasOpened) {
         updateRouteStatus();
       }
     }
@@ -655,9 +681,7 @@ function selectRouteDestination(site) {
   renderSiteDetail(site);
   populateDirectionsDestination();
 
-  if (currentSidebarView === "directions" && selectedStartPoint) {
-    requestRoute();
-  } else {
+  if (directionsHasOpened) {
     updateRouteStatus();
   }
 }
@@ -678,14 +702,15 @@ function openDirectionsPanel() {
     return;
   }
 
+  directionsHasOpened = true;
+  routeRequestStarted = false;
+
   populateStartPinSelect();
   populateDirectionsDestination();
   showSidebarView("directions");
-  updateRouteStatus();
 
-  if (selectedStartPoint) {
-    requestRoute();
-  }
+  document.getElementById("route-instructions").innerHTML = "";
+  updateRouteStatus();
 }
 
 function renderSiteDetail(site) {
@@ -888,18 +913,28 @@ function reverseDirections() {
   renderSiteDetail(selectedDestination);
   populateDirectionsDestination();
   populateStartPinSelect();
-  requestRoute();
+
+  if (routeRequestStarted) {
+    requestRoute();
+  } else {
+    updateRouteStatus();
+  }
 }
 
 function updateRouteStatus() {
   const status = document.getElementById("route-status");
 
-  if (!status) {
+  if (!status || !directionsHasOpened) {
     return;
   }
 
   if (!selectedDestination || !selectedStartMarker) {
-    status.textContent = text("selectStartAndMode");
+    status.textContent = text("chooseStartAndMode");
+    return;
+  }
+
+  if (!routeRequestStarted) {
+    status.textContent = text("chooseTravelModeFirst");
     return;
   }
 
@@ -924,6 +959,7 @@ function buildRouteKey() {
 
 async function requestRoute() {
   if (!selectedStartPoint || !selectedDestination) {
+    updateRouteStatus();
     return;
   }
 
@@ -934,6 +970,8 @@ async function requestRoute() {
   if (!routeModeSelect || !status || !instructions) {
     return;
   }
+
+  routeRequestStarted = true;
 
   const routeKey = buildRouteKey();
 
@@ -1448,7 +1486,11 @@ function applyLanguage() {
   populateStartPinSelect();
   refreshStartPinPopups();
   renderBoroughLegend(document.getElementById("borough-legend"));
-  updateRouteStatus();
+
+  if (directionsHasOpened) {
+    updateRouteStatus();
+  }
+
   updateTimestamp();
 }
 
@@ -1525,6 +1567,8 @@ function initMap() {
       if (marker) {
         setSelectedStartMarker(marker);
       }
+
+      updateRouteStatus();
     });
 
   document
