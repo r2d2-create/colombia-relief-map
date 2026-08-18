@@ -47,9 +47,8 @@ const translations = {
     selectPinnedLocation: "Select a pinned location",
     removePin: "Delete pin",
     deletePinTitle: "Delete pin?",
-    deletePinMessage: "Do you want to delete this pinned location?",
-    cancel: "Cancel",
-    confirmDelete: "Delete pin",
+    cancel: "No",
+    confirmDelete: "Yes",
     pinInstructions:
       "Press and hold this pin, then drag it to move it. Select it to use it for directions.",
     findingAddress: "Finding address…",
