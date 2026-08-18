@@ -65,10 +65,11 @@ const translations = {
     reverseDirections: "Reverse directions",
     travelMode: "Travel mode",
     chooseTravelMode: "Choose a travel mode",
-    transit: "Transit",
+    subwayTrain: "Subway / train",
+    preferLirr: "Prefer LIRR",
+    bus: "Bus",
     drive: "Car",
     walk: "Walk",
-    bicycle: "Bike",
     chooseStartAndMode:
       "Choose a pinned location and travel mode to get directions.",
     chooseTravelModeFirst:
@@ -139,10 +140,11 @@ const translations = {
     reverseDirections: "Invertir indicaciones",
     travelMode: "Modo de viaje",
     chooseTravelMode: "Elige un modo de viaje",
-    transit: "Transporte público",
+    subwayTrain: "Metro / tren",
+    preferLirr: "Preferir LIRR",
+    bus: "Autobús",
     drive: "Auto",
     walk: "A pie",
-    bicycle: "Bicicleta",
     chooseStartAndMode:
       "Elige una ubicación marcada y un modo de viaje para obtener indicaciones.",
     chooseTravelModeFirst:
@@ -709,6 +711,7 @@ function openDirectionsPanel() {
   populateDirectionsDestination();
   showSidebarView("directions");
 
+  document.getElementById("route-mode").value = "";
   document.getElementById("route-instructions").innerHTML = "";
   updateRouteStatus();
 }
@@ -923,6 +926,7 @@ function reverseDirections() {
 
 function updateRouteStatus() {
   const status = document.getElementById("route-status");
+  const routeMode = document.getElementById("route-mode");
 
   if (!status || !directionsHasOpened) {
     return;
@@ -933,12 +937,14 @@ function updateRouteStatus() {
     return;
   }
 
-  if (!routeRequestStarted) {
+  if (!routeMode?.value) {
     status.textContent = text("chooseTravelModeFirst");
     return;
   }
 
-  status.textContent = text("selectedStartMessage");
+  if (!routeRequestStarted) {
+    status.textContent = text("chooseTravelModeFirst");
+  }
 }
 
 function buildRouteKey() {
@@ -946,7 +952,7 @@ function buildRouteKey() {
     return "";
   }
 
-  const mode = document.getElementById("route-mode")?.value || "transit";
+  const mode = document.getElementById("route-mode")?.value || "";
 
   return [
     selectedStartPoint.lat.toFixed(5),
@@ -967,7 +973,8 @@ async function requestRoute() {
   const status = document.getElementById("route-status");
   const instructions = document.getElementById("route-instructions");
 
-  if (!routeModeSelect || !status || !instructions) {
+  if (!routeModeSelect || !status || !instructions || !routeModeSelect.value) {
+    updateRouteStatus();
     return;
   }
 
@@ -1441,10 +1448,12 @@ function applyLanguage() {
 
   const routeModeSelect = document.getElementById("route-mode");
 
-  routeModeSelect.options[0].textContent = text("transit");
-  routeModeSelect.options[1].textContent = text("drive");
-  routeModeSelect.options[2].textContent = text("walk");
-  routeModeSelect.options[3].textContent = text("bicycle");
+  routeModeSelect.options[0].textContent = text("chooseTravelMode");
+  routeModeSelect.options[1].textContent = text("subwayTrain");
+  routeModeSelect.options[2].textContent = text("preferLirr");
+  routeModeSelect.options[3].textContent = text("bus");
+  routeModeSelect.options[4].textContent = text("drive");
+  routeModeSelect.options[5].textContent = text("walk");
 
   document.getElementById("site-list").setAttribute(
     "aria-label",
