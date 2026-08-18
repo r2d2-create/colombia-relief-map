@@ -745,20 +745,20 @@ select {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 52px;
+  width: 28px;
+  height: 35px;
   cursor: grab;
-  font-size: 41px;
+  font-size: 27px;
   line-height: 1;
   user-select: none;
-  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.28));
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.28));
   transition: filter 0.15s ease, transform 0.15s ease;
 }
 
 .start-pin:hover,
 .start-pin.is-selected {
-  transform: translateY(-2px) scale(1.08);
-  filter: drop-shadow(0 2px 5px rgba(135, 0, 0, 0.65));
+  transform: translateY(-1px) scale(1.08);
+  filter: drop-shadow(0 1px 3px rgba(135, 0, 0, 0.65));
 }
 
 .start-pin:active {
@@ -878,7 +878,8 @@ select {
 
 @media (prefers-reduced-motion: reduce) {
   .cyber-toggle *,
-  .cyber-toggle-labels * {
+  .cyber-toggle-labels *,
+  .start-pin {
     transition: none;
   }
 }
