@@ -113,7 +113,8 @@ const translations = {
     documentTitle: "Mapa de Donaciones en NYC para Colombia",
     title: "Mapa de Ayuda para Colombia",
     subtitle:
-      "Encuentra lugares actuales de donación en el área de Nueva York para las personas afectadas por el terremoto en Colombia de agosto de 2026. \n\n *** LLAME AL CENTRO QUE ELIJA PARA PREGUNTAR QUÉ DONACIONES ACEPTAN, YA QUE LAS NECESIDADES CAMBIAN CONSTANTEMENTE. ***",
+      "Encuentra lugares actuales de donación en el área de Nueva York para las personas afectadas por el terremoto en Colombia de agosto de 2026.\n\nIMPORTANTE: LLAME AL CENTRO QUE ELIJA PARA PREGUNTAR QUÉ DONACIONES ACEPTAN, YA QUE LAS NECESIDADES CAMBIAN CONSTANTEMENTE.",
+    
     zipLabel: "Filtrar lugares de donación por código postal",
     allZipCodes: "Todos los códigos postales",
     locate: "📍 Usar mi ubicación actual",
