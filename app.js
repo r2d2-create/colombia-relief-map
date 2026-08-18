@@ -32,9 +32,9 @@ const ROUTING_PROXY_URL =
 const translations = {
   en: {
     documentTitle: "Colombia Relief Donation Map",
-    title: "Colombia Relief Map",
+    title: "Colombia Earthquake Relief: NYC Donation Site Map",
     subtitle:
-      "Find current NYC-area donation locations for people affected by the Colombia earthquake.",
+      "Find current NYC-area donation locations for people affected by the August 2026 Colombia earthquake. \n *** CALL YOUR DESIRED LOCATION TO ASK WHAT DONATIONS THEY ACCEPT, AS NEEDS CONSTANTLY CHANGE. *** ",
     zipLabel: "Filter donation sites by ZIP code",
     allZipCodes: "All ZIP codes",
     locate: "📍 Use My Current Location",
@@ -110,10 +110,10 @@ const translations = {
   },
 
   es: {
-    documentTitle: "Mapa de Donaciones para Colombia",
+    documentTitle: "Mapa de Donaciones en NYC para Colombia",
     title: "Mapa de Ayuda para Colombia",
     subtitle:
-      "Encuentra lugares actuales de donación en el área de Nueva York para las personas afectadas por el terremoto en Colombia.",
+      "Encuentra lugares actuales de donación en el área de Nueva York para las personas afectadas por el terremoto en Colombia de agosto de 2026. \n *** LLAME AL CENTRO QUE ELIJA PARA PREGUNTAR QUÉ DONACIONES ACEPTAN, YA QUE LAS NECESIDADES CAMBIAN CONSTANTEMENTE. ***",
     zipLabel: "Filtrar lugares de donación por código postal",
     allZipCodes: "Todos los códigos postales",
     locate: "📍 Usar mi ubicación actual",
