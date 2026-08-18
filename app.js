@@ -78,6 +78,7 @@ const translations = {
     selectedStartMessage:
       "Pinned location selected. Choose a travel mode for directions.",
     calculatingRoute: "Calculating route",
+    translatingRoute: "Translating directions…",
     routeError:
       "Could not calculate this route. Check your connection or try another travel mode.",
     noRoute: "No route found for this travel mode.",
@@ -158,6 +159,7 @@ const translations = {
     selectedStartMessage:
       "Ubicación marcada seleccionada. Elige un modo de viaje para obtener indicaciones.",
     calculatingRoute: "Calculando ruta",
+    translatingRoute: "Traduciendo indicaciones…",
     routeError:
       "No se pudo calcular esta ruta. Revisa tu conexión o prueba otro modo de viaje.",
     noRoute: "No se encontró una ruta para este modo de viaje.",
@@ -428,12 +430,7 @@ function showSidebarView(view) {
   });
 }
 
-function clearRoute() {
-  if (routeAbortController) {
-    routeAbortController.abort();
-    routeAbortController = null;
-  }
-
+function removeRouteLayers() {
   if (routeLayer) {
     map.removeLayer(routeLayer);
     routeLayer = null;
@@ -448,6 +445,15 @@ function clearRoute() {
     map.removeLayer(transitBadgeLayerGroup);
     transitBadgeLayerGroup = null;
   }
+}
+
+function clearRoute() {
+  if (routeAbortController) {
+    routeAbortController.abort();
+    routeAbortController = null;
+  }
+
+  removeRouteLayers();
 
   lastRouteKey = "";
   lastRouteData = null;
@@ -986,7 +992,13 @@ function buildRouteKey() {
   ].join("|");
 }
 
-async function requestRoute() {
+async function requestRoute(options = {}) {
+  const {
+    preserveVisibleRoute = false,
+    fitBounds = true,
+    statusMessage = ""
+  } = options;
+
   if (!selectedStartPoint || !selectedDestination) {
     updateRouteStatus();
     return;
@@ -1013,7 +1025,7 @@ async function requestRoute() {
   if (routeCache.has(routeKey)) {
     lastRouteKey = routeKey;
     lastRouteData = routeCache.get(routeKey);
-    drawRoute(lastRouteData, true);
+    drawRoute(routeCache.get(routeKey), fitBounds);
     return;
   }
 
@@ -1023,8 +1035,12 @@ async function requestRoute() {
 
   routeAbortController = new AbortController();
 
-  status.textContent = `${text("calculatingRoute")}…`;
-  instructions.innerHTML = "";
+  status.textContent =
+    statusMessage || `${text("calculatingRoute")}…`;
+
+  if (!preserveVisibleRoute) {
+    instructions.innerHTML = "";
+  }
 
   const parameters = new URLSearchParams({
     startLat: selectedStartPoint.lat,
@@ -1054,14 +1070,17 @@ async function requestRoute() {
     lastRouteKey = routeKey;
     lastRouteData = routeData;
 
-    drawRoute(routeData, true);
+    drawRoute(routeData, fitBounds);
   } catch (error) {
     if (error.name === "AbortError") {
       return;
     }
 
     console.error("Routing error:", error);
-    status.textContent = text("routeError");
+
+    if (!preserveVisibleRoute) {
+      status.textContent = text("routeError");
+    }
   }
 }
 
@@ -1071,20 +1090,7 @@ function drawRoute(routeData, shouldFitBounds = true) {
   const instructions = document.getElementById("route-instructions");
   const routeFeature = routeData.features?.[0];
 
-  if (routeLayer) {
-    map.removeLayer(routeLayer);
-    routeLayer = null;
-  }
-
-  if (transitStepLayerGroup) {
-    map.removeLayer(transitStepLayerGroup);
-    transitStepLayerGroup = null;
-  }
-
-  if (transitBadgeLayerGroup) {
-    map.removeLayer(transitBadgeLayerGroup);
-    transitBadgeLayerGroup = null;
-  }
+  removeRouteLayers();
 
   if (!routeFeature) {
     status.textContent = text("noRoute");
@@ -1743,11 +1749,27 @@ function toggleLanguage() {
     ? "es"
     : "en";
 
-  if (routeLayer) {
-    clearRoute();
-  }
+  const hasVisibleRoute =
+    routeLayer &&
+    selectedStartPoint &&
+    selectedDestination &&
+    document.getElementById("route-mode")?.value;
 
   applyLanguage();
+
+  if (hasVisibleRoute) {
+    const status = document.getElementById("route-status");
+
+    if (status) {
+      status.textContent = text("translatingRoute");
+    }
+
+    requestRoute({
+      preserveVisibleRoute: true,
+      fitBounds: false,
+      statusMessage: text("translatingRoute")
+    });
+  }
 }
 
 function initMap() {
@@ -1821,7 +1843,7 @@ function initMap() {
 
   document
     .getElementById("route-mode")
-    .addEventListener("change", requestRoute);
+    .addEventListener("change", () => requestRoute());
 
   document
     .getElementById("swap-directions-btn")
