@@ -65,11 +65,10 @@ const translations = {
     reverseDirections: "Reverse directions",
     travelMode: "Travel mode",
     chooseTravelMode: "Choose a travel mode",
-    subwayTrain: "Subway / train",
-    preferLirr: "Prefer LIRR",
-    bus: "Bus",
-    drive: "Car",
-    walk: "Walk",
+    transit: "Transit",
+    drive: "Driving",
+    walk: "Walking",
+    bicycle: "Cycling",
     chooseStartAndMode:
       "Choose a pinned location and travel mode to get directions.",
     chooseTravelModeFirst:
@@ -140,11 +139,10 @@ const translations = {
     reverseDirections: "Invertir indicaciones",
     travelMode: "Modo de viaje",
     chooseTravelMode: "Elige un modo de viaje",
-    subwayTrain: "Metro / tren",
-    preferLirr: "Preferir LIRR",
-    bus: "Autobús",
+    transit: "Transporte público",
     drive: "Auto",
     walk: "A pie",
+    bicycle: "Bicicleta",
     chooseStartAndMode:
       "Elige una ubicación marcada y un modo de viaje para obtener indicaciones.",
     chooseTravelModeFirst:
@@ -1449,11 +1447,10 @@ function applyLanguage() {
   const routeModeSelect = document.getElementById("route-mode");
 
   routeModeSelect.options[0].textContent = text("chooseTravelMode");
-  routeModeSelect.options[1].textContent = text("subwayTrain");
-  routeModeSelect.options[2].textContent = text("preferLirr");
-  routeModeSelect.options[3].textContent = text("bus");
-  routeModeSelect.options[4].textContent = text("drive");
-  routeModeSelect.options[5].textContent = text("walk");
+  routeModeSelect.options[1].textContent = text("transit");
+  routeModeSelect.options[2].textContent = text("drive");
+  routeModeSelect.options[3].textContent = text("walk");
+  routeModeSelect.options[4].textContent = text("bicycle");
 
   document.getElementById("site-list").setAttribute(
     "aria-label",
