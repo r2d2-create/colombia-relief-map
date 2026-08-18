@@ -34,7 +34,7 @@ const translations = {
     documentTitle: "Colombia Relief Donation Map",
     title: "Colombia Earthquake Relief: NYC Donation Site Map",
     subtitle:
-      "Find current NYC-area donation locations for people affected by the August 2026 Colombia earthquake." \n "*** CALL YOUR DESIRED LOCATION TO ASK WHAT DONATIONS THEY ACCEPT, AS NEEDS CONSTANTLY CHANGE. *** ",
+      "Find current NYC-area donation locations for people affected by the August 2026 Colombia earthquake. *** CALL YOUR DESIRED LOCATION TO ASK WHAT DONATIONS THEY ACCEPT, AS NEEDS CONSTANTLY CHANGE. *** ",
     zipLabel: "Filter donation sites by ZIP code",
     allZipCodes: "All ZIP codes",
     locate: "📍 Use My Current Location",
