@@ -61,6 +61,10 @@ button:disabled {
   border-bottom: 1px solid var(--border);
 }
 
+#site-subtitle {
+  white-space: pre-line;
+}
+
 .header-top-row {
   display: flex;
   align-items: flex-start;
