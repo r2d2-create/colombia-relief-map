@@ -5,6 +5,8 @@ This interactive web map tool helps New Yorkers find, relative to where they're 
 
 🗺️ Interactive Relief Map: View verified collection points across the five boroughs.
 
-🔍 ZIP Code Filter: Quick-drop filters to pinpoint active collection sites right in your neighborhood.
+🔍 ZIP Code Filter: Quick-drop filters to pinpoint active collection sites right in your ZIP Code.
 
-🚇 Direct Multi-Modal Transit Routing: Single-click routing links that open directly in Google Maps to guide your trip via walking, driving, subways, buses, or the LIRR.
+🚇 Direct Multi-Modal Transit Routing: Single-click routing links that open directly in Google Maps to guide your trip via walking, driving, subways, buses, or biking.
+
+🗣 Bilingual English/Spanish Versions: Toggle between English and Spanish versions of the map for better accessibility.
