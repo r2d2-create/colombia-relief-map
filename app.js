@@ -1,3 +1,7 @@
+// ============================================================
+// MAP STATE, USER SELECTIONS, AND ROUTE STATE
+// ============================================================
+
 let map;
 let markerGroup;
 let userLocationMarker;
@@ -22,12 +26,20 @@ let routeRequestStarted = false;
 let activeRouteGeometry = null;
 let activeRouteSummary = null;
 
+// ============================================================
+// IN-MEMORY CACHES AND EXTERNAL ROUTING ENDPOINT
+// ============================================================
+
 const startMarkers = new Map();
 const reverseGeocodeCache = new Map();
 const routeCache = new Map();
 
 const ROUTING_PROXY_URL =
   "https://colombia-relief-routing.end259-b4a.workers.dev/route";
+
+// ============================================================
+// ENGLISH AND SPANISH INTERFACE TRANSLATIONS
+// ============================================================
 
 const translations = {
   en: {
@@ -114,7 +126,6 @@ const translations = {
     title: "Mapa de Ayuda para Colombia",
     subtitle:
       "Encuentra lugares actuales de donación en el área de Nueva York para las personas afectadas por el terremoto en Colombia de agosto de 2026.\n\nIMPORTANTE: LLAME AL CENTRO QUE ELIJA PARA PREGUNTAR QUÉ DONACIONES ACEPTAN, YA QUE LAS NECESIDADES CAMBIAN CONSTANTEMENTE.",
-    
     zipLabel: "Filtrar lugares de donación por código postal",
     allZipCodes: "Todos los códigos postales",
     locate: "📍 Usar mi ubicación actual",
@@ -193,6 +204,10 @@ const translations = {
   }
 };
 
+// ============================================================
+// TEXT, DATA VALIDATION, AND SAFE HTML FORMATTING HELPERS
+// ============================================================
+
 function text(key) {
   return translations[currentLanguage][key];
 }
@@ -257,6 +272,10 @@ function getBoroughColor(borough) {
   }
 }
 
+// ============================================================
+// LEAFLET MARKER ICONS AND PIN DISPLAY HELPERS
+// ============================================================
+
 function createCustomMarker(color) {
   return window.L.divIcon({
     className: "custom-pin",
@@ -312,6 +331,10 @@ function createUserLocationMarker() {
     popupAnchor: [0, -9]
   });
 }
+
+// ============================================================
+// REVERSE GEOCODING FOR USER-DROPPED START PINS
+// ============================================================
 
 function coordinatesCacheKey(latlng) {
   return `${Number(latlng.lat).toFixed(5)},${Number(latlng.lng).toFixed(5)}`;
@@ -416,6 +439,10 @@ function queueReverseGeocode(marker) {
   }, 250);
 }
 
+// ============================================================
+// SIDEBAR VIEW CONTROLS AND ROUTE CLEANUP
+// ============================================================
+
 function showSidebarView(view) {
   currentSidebarView = view;
 
@@ -466,6 +493,10 @@ function clearRoute() {
     instructions.innerHTML = "";
   }
 }
+
+// ============================================================
+// USER START-PIN SELECTION, POPUPS, DRAGGING, AND DELETION
+// ============================================================
 
 function setSelectedStartMarker(marker) {
   if (!marker || !startMarkers.has(marker.options.startPinId)) {
@@ -707,6 +738,10 @@ function addStartPoint(latlng, label = "") {
   return marker;
 }
 
+// ============================================================
+// DONATION-SITE DETAIL VIEW AND DIRECTIONS PANEL
+// ============================================================
+
 function selectRouteDestination(site) {
   selectedDestination = site;
   renderSiteDetail(site);
@@ -815,6 +850,10 @@ function renderSiteDetail(site) {
     .getElementById("send-to-phone-btn")
     .addEventListener("click", sendDirectionsToPhone);
 }
+
+// ============================================================
+// DIRECTIONS SHARING AND START/DESTINATION FORM CONTROLS
+// ============================================================
 
 function getGoogleMapsDirectionsUrl() {
   if (!selectedDestination) {
@@ -976,6 +1015,10 @@ function updateRouteStatus() {
   }
 }
 
+// ============================================================
+// ROUTE CACHING AND ROUTING-REQUEST MANAGEMENT
+// ============================================================
+
 function buildRouteKey() {
   if (!selectedStartPoint || !selectedDestination) {
     return "";
@@ -1104,6 +1147,10 @@ async function requestRoute(options = {}) {
     }
   }
 }
+
+// ============================================================
+// ROUTE GEOMETRY, TRANSIT OVERLAYS, AND INSTRUCTION RENDERING
+// ============================================================
 
 function drawRoute(routeData, shouldFitBounds = true) {
   const L = window.L;
@@ -1239,6 +1286,10 @@ function drawTransitOverlays(steps) {
   });
 }
 
+// ============================================================
+// TRANSIT LINE FORMATTING, MARKER BADGES, AND POLYLINE DECODING
+// ============================================================
+
 function normalizeTransitColor(color, fallback) {
   const value = safeText(color).trim();
 
@@ -1347,6 +1398,10 @@ function decodeGooglePolylineForLeaflet(encoded) {
   return latLngs;
 }
 
+// ============================================================
+// TURN-BY-TURN INSTRUCTION AND TRANSIT-STEP HTML
+// ============================================================
+
 function createRouteInstructionHtml(step) {
   const transitDetails = step.transitDetails;
   const transitLine = transitDetails?.transitLine;
@@ -1407,6 +1462,10 @@ function createRouteInstructionHtml(step) {
     </li>
   `;
 }
+
+// ============================================================
+// DONATION-SITE POPUPS, CARDS, AND ZIP-CODE FILTERING
+// ============================================================
 
 function createSitePopupHtml(site) {
   const name = safeText(site.name, "Unnamed donation site");
@@ -1539,6 +1598,10 @@ function filterMarkers() {
   );
 }
 
+// ============================================================
+// MAP LEGEND FOR NYC BOROUGHS AND USER PINS
+// ============================================================
+
 function addBoroughLegend() {
   const legend = window.L.control({
     position: "bottomright"
@@ -1601,6 +1664,10 @@ function renderBoroughLegend(container) {
     </div>
   `;
 }
+
+// ============================================================
+// DONATION-SITE DATA LOADING AND DEVICE LOCATION SUPPORT
+// ============================================================
 
 async function loadSites() {
   const listContainer = document.getElementById("site-list");
@@ -1688,6 +1755,10 @@ function locateUser() {
     timeout: 10000
   });
 }
+
+// ============================================================
+// LANGUAGE SWITCHING, LOCALIZED UI, AND PAGE TIMESTAMP
+// ============================================================
 
 function updateTimestamp() {
   const timestamp = document.getElementById("timestamp");
@@ -1834,6 +1905,10 @@ function toggleLanguage() {
   }
 }
 
+// ============================================================
+// MAP CREATION, LEAFLET CONFIGURATION, AND EVENT LISTENERS
+// ============================================================
+
 function initMap() {
   const L = window.L;
   const mapElement = document.getElementById("map");
@@ -1914,5 +1989,9 @@ function initMap() {
   applyLanguage();
   loadSites();
 }
+
+// ============================================================
+// APPLICATION STARTUP
+// ============================================================
 
 document.addEventListener("DOMContentLoaded", initMap);
