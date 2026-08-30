@@ -1,10 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- =========================================================
+       PAGE METADATA, LEAFLET STYLES, AND PROJECT FILES
+       ========================================================= -->
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Colombia Relief Donation Map</title>
 
+  <!-- Leaflet map library stylesheet -->
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -12,23 +17,35 @@
     crossorigin=""
   />
 
+  <!-- Project stylesheet -->
   <link rel="stylesheet" href="style.css" />
 
+  <!-- Leaflet map library JavaScript -->
   <script
     src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
     crossorigin=""
   ></script>
 
+  <!-- Project JavaScript, loaded after the page HTML is parsed -->
   <script src="app.js" defer></script>
 </head>
 
 <body>
+  <!-- =========================================================
+       LEFT SIDEBAR: HEADER, FILTERS, SITE DETAILS, AND ROUTING
+       ========================================================= -->
+
   <aside id="sidebar">
+    <!-- =======================================================
+         WEBSITE TITLE, SUBTITLE, AND LANGUAGE TOGGLE
+         ======================================================= -->
+
     <header class="sidebar-header">
       <div class="header-top-row">
         <h1 id="site-title">Colombia Earthquake Relief: NYC Donation Site Map</h1>
 
+        <!-- English/Spanish language toggle -->
         <div class="cyber-toggle-wrapper">
           <input
             class="cyber-toggle-checkbox"
@@ -52,6 +69,7 @@
               <span class="cyber-toggle-thumb-shadow"></span>
               <span class="cyber-toggle-thumb-highlight"></span>
 
+              <!-- Decorative icon inside the language-toggle control -->
               <span class="cyber-toggle-thumb-icon" aria-hidden="true">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                   <path
@@ -61,6 +79,7 @@
               </span>
             </span>
 
+            <!-- Decorative particles used by the toggle animation -->
             <span class="cyber-toggle-particles" aria-hidden="true">
               <span class="cyber-toggle-particle"></span>
               <span class="cyber-toggle-particle"></span>
@@ -69,6 +88,7 @@
             </span>
           </label>
 
+          <!-- Visible language labels for the toggle -->
           <div class="cyber-toggle-labels" aria-hidden="true">
             <span class="cyber-toggle-label-english">English</span>
             <span class="cyber-toggle-label-espanol">Español</span>
@@ -76,13 +96,20 @@
         </div>
       </div>
 
+      <!-- Localized subtitle and donation-information notice -->
       <p id="site-subtitle">
-        Find current NYC-area donation locations for people affected by the August 2026 Colombia earthquake. 
-        *** CALL YOUR DESIRED LOCATION TO ASK WHAT DONATIONS THEY ACCEPT, AS NEEDS CONSTANTLY CHANGE. *** 
+        Find current NYC-area donation locations for people affected by the August 2026 Colombia earthquake.
+        *** CALL YOUR DESIRED LOCATION TO ASK WHAT DONATIONS THEY ACCEPT, AS NEEDS CONSTANTLY CHANGE. ***
       </p>
     </header>
 
+    <!-- =======================================================
+         HOME VIEW: ZIP FILTER, USER LOCATION, INSTRUCTIONS,
+         AND THE DONATION-SITE LIST
+         ======================================================= -->
+
     <section id="sidebar-home">
+      <!-- ZIP-code filter and current-device-location button -->
       <section class="filter-group" aria-label="Donation site filters">
         <label id="zip-filter-label" for="zipFilter">
           Filter donation sites by ZIP code
@@ -99,6 +126,7 @@
         <p id="timestamp" aria-live="polite"></p>
       </section>
 
+      <!-- Instructions for placing, moving, selecting, and deleting map pins -->
       <section id="instructions-panel" aria-live="polite">
         <h2 id="instructions-heading">Instructions</h2>
 
@@ -110,6 +138,7 @@
         </p>
       </section>
 
+      <!-- Donation-site cards are dynamically inserted here by app.js -->
       <section
         id="site-list"
         aria-label="Donation site locations"
@@ -118,6 +147,11 @@
         <p class="loading-message">Loading verified donation sites…</p>
       </section>
     </section>
+
+    <!-- =======================================================
+         DONATION-SITE DETAIL VIEW
+         Displayed after a user selects a site from the list/map.
+         ======================================================= -->
 
     <section
       id="site-detail-panel"
@@ -129,8 +163,15 @@
         ← Back to donation sites
       </button>
 
+      <!-- Selected site information and action buttons are inserted by app.js -->
       <div id="site-detail-content"></div>
     </section>
+
+    <!-- =======================================================
+         DIRECTIONS VIEW
+         Displays a selected start pin, destination, travel-mode
+         selector, route status, and step-by-step instructions.
+         ======================================================= -->
 
     <section
       id="directions-panel"
@@ -144,6 +185,7 @@
 
       <h2 id="directions-heading">Directions</h2>
 
+      <!-- Start-point and destination cards, including reverse-route button -->
       <div class="direction-locations">
         <div class="direction-location-card">
           <label id="start-point-label" for="start-pin-select">
@@ -170,11 +212,13 @@
             Destination
           </span>
 
+          <!-- Destination details are inserted by app.js -->
           <strong id="directions-destination-name"></strong>
           <span id="directions-destination-address"></span>
         </div>
       </div>
 
+      <!-- Transportation-mode selector -->
       <label id="travel-mode-label" for="route-mode">Travel mode</label>
 
       <select id="route-mode">
@@ -185,6 +229,7 @@
         <option value="bicycle">Cycling</option>
       </select>
 
+      <!-- Localized route status and generated navigation instructions -->
       <p id="route-status">
         Choose a pinned location and travel mode to get directions.
       </p>
@@ -192,6 +237,12 @@
       <ol id="route-instructions"></ol>
     </section>
   </aside>
+
+  <!-- =========================================================
+       INTERACTIVE LEAFLET MAP
+       Donation markers, user pins, routes, transit overlays,
+       and the borough legend are rendered here by app.js.
+       ========================================================= -->
 
   <main id="map" aria-label="Interactive donation site map"></main>
 </body>
