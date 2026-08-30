@@ -1,3 +1,9 @@
+# ============================================================
+# IMPORTS
+# Standard-library tools for HTML cleanup, JSON files, environment
+# variables, regular expressions, and project file paths.
+# ============================================================
+
 import html
 import json
 import os
@@ -6,6 +12,12 @@ from pathlib import Path
 
 import requests
 
+
+# ============================================================
+# SOURCE URLS, PROJECT PATHS, AND API CONFIGURATION
+# Defines the donation-site data source, Flourish embed, local
+# output files, project contact information, and Geoclient API.
+# ============================================================
 
 SOURCE_URL = "https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/"
 FLOURISH_EMBED_URL = "https://flo.uri.sh/visualisation/29940879/embed"
@@ -19,6 +31,13 @@ CONTACT_EMAIL = "end259@nyu.edu"
 
 GEOCLIENT_API_KEY = os.environ.get("NYC_GEOCLIENT_API_KEY", "").strip()
 GEOCLIENT_SEARCH_URL = "https://api.nyc.gov/geoclient/v2/search.json"
+
+
+# ============================================================
+# HTTP REQUEST HEADERS
+# Identifies the project responsibly when requesting source data
+# and supplies the API key header needed by NYC Geoclient.
+# ============================================================
 
 SOURCE_HEADERS = {
     "User-Agent": (
@@ -34,6 +53,12 @@ GEOCLIENT_HEADERS = {
     "Ocp-Apim-Subscription-Key": GEOCLIENT_API_KEY,
 }
 
+
+# ============================================================
+# JSON FILE READING AND SAFE WRITING
+# Reads the geocoding cache and writes JSON output through a
+# temporary file to avoid corrupting files during an interruption.
+# ============================================================
 
 def write_json(file_path, data):
     """Safely write formatted JSON to a project file."""
@@ -58,6 +83,12 @@ def load_json(file_path, fallback):
         print(f"Could not read {file_path.name}: {error}")
         return fallback
 
+
+# ============================================================
+# TEXT CLEANUP, NORMALIZATION, AND BASIC DATA HELPERS
+# Cleans scraped table values, creates normalized text for matching,
+# extracts ZIP codes, and standardizes NYC borough names.
+# ============================================================
 
 def clean_text(value):
     """Normalize text scraped from HTML and Flourish table cells."""
@@ -104,6 +135,13 @@ def normalize_borough(value):
 
     return "Other"
 
+
+# ============================================================
+# ADDRESS NORMALIZATION FOR NYC GEOCLIENT
+# Prepares scraped addresses for Geoclient by preserving Queens
+# house-number hyphens, removing unit details, and expanding
+# common street abbreviations.
+# ============================================================
 
 def normalize_address_for_geocoding(address):
     """
@@ -185,6 +223,12 @@ def geocode_cache_key(address, borough):
 
     return f"geoclient-v1:{borough.lower()}:{normalized_address}"
 
+
+# ============================================================
+# GEOCLIENT RESPONSE PARSING
+# Handles different possible Geoclient response structures, finds
+# the first usable coordinate result, and builds display-ready data.
+# ============================================================
 
 def first_value(data, keys):
     """Return the first non-empty value for a list of possible field names."""
@@ -300,6 +344,12 @@ def geoclient_result_to_location(response_data, fallback_borough):
     return None
 
 
+# ============================================================
+# FLOURISH EMBED JSON EXTRACTION
+# Finds the embedded Flourish `_Flourish_data` object in the page,
+# safely isolates its nested JSON, and returns its table rows.
+# ============================================================
+
 def extract_balanced_json_object(text, start_index):
     """Return a full nested JSON object beginning at an opening brace."""
     if start_index >= len(text) or text[start_index] != "{":
@@ -372,6 +422,12 @@ def extract_flourish_rows(page_html):
     return rows
 
 
+# ============================================================
+# SOURCE-ROW CLEANUP AND DONATION-SITE DEDUPLICATION
+# Converts raw Flourish table columns into consistent donation-site
+# records and removes duplicate name/address combinations.
+# ============================================================
+
 def source_rows_to_sites(rows):
     """Convert Flourish rows into normalized donation-site records."""
     sites = []
@@ -410,6 +466,12 @@ def source_rows_to_sites(rows):
     print(f"Prepared {len(sites)} unique site record(s) for geocoding.")
     return sites
 
+
+# ============================================================
+# NYC GEOCLIENT GEOCODING AND LOCAL RESULT CACHING
+# Uses Geoclient to convert NYC addresses to coordinates, reuses
+# cached results where possible, and saves successful lookups.
+# ============================================================
 
 def geocode_address(address, borough, cache):
     """Geocode one NYC address with Geoclient V2 and cache the result."""
@@ -470,6 +532,12 @@ def geocode_address(address, borough, cache):
     return location
 
 
+# ============================================================
+# MAP-READY DATASET CREATION
+# Combines each source record with its geocoded coordinates and
+# writes the donation-site dataset used by the web map.
+# ============================================================
+
 def build_map_sites(source_sites):
     """Geocode source records and create the map-ready output dataset."""
     cache = load_json(GEOCODE_CACHE_FILE, {})
@@ -508,6 +576,12 @@ def build_map_sites(source_sites):
     return map_sites
 
 
+# ============================================================
+# MAIN SCRAPING WORKFLOW
+# Downloads the Flourish donation table, extracts and cleans source
+# records, geocodes them, and updates sites.json for the web map.
+# ============================================================
+
 def auto_scrape():
     """Download source data, geocode NYC sites, and write JSON outputs."""
     try:
@@ -540,6 +614,12 @@ def auto_scrape():
     print(f"Saved {len(map_sites)} map-ready donation site(s).")
     print(f"Updated geocoding cache: {GEOCODE_CACHE_FILE.name}")
 
+
+# ============================================================
+# SCRIPT ENTRY POINT
+# Runs the scraping workflow only when this Python file is executed
+# directly, rather than when it is imported by another Python file.
+# ============================================================
 
 if __name__ == "__main__":
     auto_scrape()
