@@ -1,3 +1,7 @@
+/* ============================================================
+   DESIGN TOKENS AND GLOBAL PAGE RESET
+   ============================================================ */
+
 :root {
   --sidebar-width: 390px;
   --blue: #0b5cab;
@@ -40,6 +44,10 @@ button:disabled {
   cursor: not-allowed;
   opacity: 0.66;
 }
+
+/* ============================================================
+   MAIN SIDEBAR LAYOUT AND HEADER
+   ============================================================ */
 
 #sidebar {
   z-index: 5;
@@ -85,6 +93,10 @@ button:disabled {
   font-size: 14px;
   line-height: 1.45;
 }
+
+/* ============================================================
+   ENGLISH / SPANISH LANGUAGE TOGGLE
+   ============================================================ */
 
 .cyber-toggle-wrapper {
   position: relative;
@@ -279,6 +291,10 @@ button:disabled {
   color: var(--dark-blue);
 }
 
+/* ============================================================
+   LANGUAGE TOGGLE: SPANISH SELECTED STATE
+   ============================================================ */
+
 .cyber-toggle-checkbox:checked
   ~ .cyber-toggle-labels
   .cyber-toggle-label-english {
@@ -365,6 +381,10 @@ button:disabled {
   border-radius: 999px;
 }
 
+/* ============================================================
+   SIDEBAR VIEWS, FILTER CONTROLS, AND LOCATION BUTTON
+   ============================================================ */
+
 #sidebar-home,
 .sidebar-view {
   flex: 0 0 auto;
@@ -418,6 +438,10 @@ select {
   color: #71808d;
   font-size: 12px;
 }
+
+/* ============================================================
+   MAP INTERACTION INSTRUCTIONS AND DONATION-SITE LIST
+   ============================================================ */
 
 #instructions-panel {
   margin: 0;
@@ -549,6 +573,10 @@ select {
   border-radius: 6px;
 }
 
+/* ============================================================
+   DONATION-SITE DETAIL VIEW AND ACTION BUTTONS
+   ============================================================ */
+
 .sidebar-view {
   padding: 18px 24px 28px;
   background: #ffffff;
@@ -651,6 +679,10 @@ select {
   background: #eaf3fc;
 }
 
+/* ============================================================
+   DIRECTIONS PANEL, LOCATION CARDS, AND ROUTE CONTROLS
+   ============================================================ */
+
 .direction-locations {
   display: grid;
   gap: 10px;
@@ -731,6 +763,10 @@ select {
   list-style: none;
 }
 
+/* ============================================================
+   MAP CONTAINER, USER PINS, AND STARTING-POINT PIN STYLES
+   ============================================================ */
+
 #map {
   flex: 1;
   width: 100%;
@@ -769,6 +805,10 @@ select {
 .start-pin:active {
   cursor: grabbing;
 }
+
+/* ============================================================
+   START-PIN POPUPS AND PIN ACTION BUTTONS
+   ============================================================ */
 
 .start-pin-popup p {
   margin: 0.35rem 0 0.7rem;
@@ -834,6 +874,10 @@ select {
   font-size: 12px;
 }
 
+/* ============================================================
+   MAP LEGEND FOR DONATION-SITE BOROUGHS AND USER PINS
+   ============================================================ */
+
 .borough-legend {
   min-width: 172px;
   padding: 10px 12px;
@@ -880,6 +924,10 @@ select {
   font-size: 16px;
   line-height: 1;
 }
+
+/* ============================================================
+   TRANSIT LINE BADGES AND TURN-BY-TURN ROUTE INSTRUCTIONS
+   ============================================================ */
 
 .transit-route-badge-wrapper {
   border: 0;
@@ -956,6 +1004,10 @@ select {
   line-height: 1.35;
 }
 
+/* ============================================================
+   ACCESSIBILITY: REDUCED-MOTION PREFERENCE
+   ============================================================ */
+
 @media (prefers-reduced-motion: reduce) {
   .cyber-toggle *,
   .cyber-toggle-labels *,
@@ -963,6 +1015,10 @@ select {
     transition: none;
   }
 }
+
+/* ============================================================
+   MOBILE AND SMALL-SCREEN RESPONSIVE LAYOUT
+   ============================================================ */
 
 @media (max-width: 768px) {
   html,
