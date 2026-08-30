@@ -1930,7 +1930,7 @@ function initMap() {
   map = L.map("map").setView([40.7128, -74.006], 11);
 
   L.tileLayer(
-    "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=cb1_2lav_1_c90bd27091325568093fa860",
+    "https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=cb1_2lav_1_c90bd27091325568093fa860",
     {
       subdomains: "abcd",
       maxZoom: 20,
