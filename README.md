@@ -11,7 +11,7 @@ This interactive web map tool helps New Yorkers find, relative to where they're 
 
 🗣 Bilingual English/Spanish Versions: Toggle between English and Spanish versions of the map for better accessibility.
 
-**Data Source:**
+**Data Sources:**
 
 - **Donation Sites:** I web scraped the list of **verified** donation sites from the Flourish widget table in Documented NY's article here: https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/ . In the `scraper.py` file, I converted donation-site addresses into latitude/longitude coordinates using the NYC Geoclient API. The scraper stores successful lookup results in `geocode_cache.json` and generates the map-ready `sites.json` dataset.
 
