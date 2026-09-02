@@ -1,7 +1,7 @@
 # colombia-relief-map
 This interactive web map helps New Yorkers find, relative to where they're physically located, local donation spots accepting supplies and aid for the Colombian earthquake recovery efforts.
 
-Check out the web map here: https://r2d2-create.github.io/colombia-relief-map/  
+Check it out here: https://r2d2-create.github.io/colombia-relief-map/  
 
 # Key Features:
 
