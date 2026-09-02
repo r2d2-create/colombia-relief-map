@@ -5,13 +5,13 @@ Check out the web map here: https://r2d2-create.github.io/colombia-relief-map/
 
 # Key Features:
 
-🗺️ Interactive Relief Map: View verified collection points across the five boroughs.
+- 🗺️ **Interactive Relief Map:** View verified collection points across the five boroughs.
 
-🔍 ZIP Code Filter: Quick-drop filters to pinpoint active collection sites right in your ZIP Code.
+- 🔍 **ZIP Code Filter:** Quick-drop filters to pinpoint active collection sites right in your ZIP Code.
 
-🚇 Direct Multi-Modal Transit Routing: Single-click routing links that open directly in Google Maps to guide your trip via walking, driving, subways, buses, or biking.
+- 🚇 **Direct Multi-Modal Transit Routing:** Single-click routing links that open directly in Google Maps to guide your trip via walking, driving, subways, buses, or biking.
 
-🗣 Bilingual English/Spanish Versions: Toggle between English and Spanish versions of the map for better accessibility.
+- 🗣 **Bilingual English/Spanish Versions:** Toggle between English and Spanish versions of the map for better accessibility.
 
 # Data Sources:
 
