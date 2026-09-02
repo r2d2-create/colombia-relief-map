@@ -3,7 +3,7 @@ This interactive web map tool helps New Yorkers find, relative to where they're 
 
 Check out the web map here: https://r2d2-create.github.io/colombia-relief-map/  
 
-**Key Features:**
+# Key Features:
 
 🗺️ Interactive Relief Map: View verified collection points across the five boroughs.
 
@@ -13,12 +13,13 @@ Check out the web map here: https://r2d2-create.github.io/colombia-relief-map/
 
 🗣 Bilingual English/Spanish Versions: Toggle between English and Spanish versions of the map for better accessibility.
 
-**Data Sources:**
+# Data Sources:
 
-- **Donation Sites:** In the `scraper.py` file, I web scraped the list of **verified** donation sites from the Flourish widget table embedded in Documented NY's article here: https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/ . I then converted donation-site addresses into latitude/longitude coordinates using the NYC Geoclient API. The scraper stores successful geocoding results in `geocode_cache.json` and generates the map-ready `sites.json` dataset.
+- **Verified Donation Sites:** Sourced from from the Flourish widget table embedded in Documented NY's article here: https://documentedny.com/2026/08/11/colombia-earthquake-relief-nyc/ .
+    -   In the `scraper.py` file, I web scraped the list of **verified** donation sites from the table. I   then converted donation-site addresses into latitude/longitude coordinates using the NYC Geoclient API.    The scraper stores successful geocoding results in `geocode_cache.json` and generates the map-ready       `sites.json` dataset.
 
-- **Basemap:** I used CARTO Voyager raster tiles for the basemap and displayed OpenStreetMap and CARTO attribution in the application.
+- **Basemap:** Sourced from CARTO Voyager raster tiles.
 
-- **Directions:** I obtained route geometry and turn-by-turn directions from the Google Routes API through a Cloudflare Worker proxy.
+- **Directions:** Sourced route geometry and turn-by-turn directions from the Google Routes API through a Cloudflare Worker proxy.
 
-- **Interactive map:** I built the web map with Leaflet, an open-source JavaScript library for interactive maps. I used Leaflet to render the donation-site markers, user pins, popups, route lines, transit overlays, and interactive controls.
+- **Interactive map:** I built the web map with Leaflet. I used Leaflet to render the donation-site markers, user pins, popups, route lines, transit overlays, and interactive controls.
